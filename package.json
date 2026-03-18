@@ -1,0 +1,37 @@
+{
+  "name": "zenithmc",
+  "version": "1.0.0",
+  "description": "ZenithMC Launcher — Minecraft Launcher moderne",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --dir"
+  },
+  "build": {
+    "appId": "fr.zenithmc.launcher",
+    "productName": "ZenithMC",
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/.cache"
+    ]
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "electron": "^41.0.3",
+    "electron-builder": "^26.8.1"
+  }
+}
