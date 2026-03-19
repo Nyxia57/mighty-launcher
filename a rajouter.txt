@@ -1,12 +1,11 @@
 V1
 
-Modifier le nom en Mighty
+Modifier le nom en Mighty ✓
 Toute les version du jeu 
-Pouvoir lancer le jeu
-Pouvoir importer ou exporter ces profils
-faire marcher les image de fond 
-retirer les dernierre nouvelle et serveur populaire (remplacer par les amis)
-Pouvoir mettre plusieurs compte
+Pouvoir lancer le jeu 
+Pouvoir importer ou exporter ces profils ✓
+retirer les dernierre nouvelle et serveur populaire (remplacer par les amis) ✓
+Pouvoir mettre plusieurs compte ✓
 
 
 V2
