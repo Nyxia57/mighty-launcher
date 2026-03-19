@@ -4,16 +4,6 @@ const https = require('https')
 const http  = require('http')
 const { URL } = require('url')
 
-// ═══════════════════════════════════════
-// ZENITHMC — AUTH MICROSOFT / MINECRAFT
-//
-// On utilise le Client ID officiel de l'app Minecraft (Xbox)
-// C'est exactement ce que font Prism Launcher, MultiMC, etc.
-// Aucune app Azure à créer, aucun secret nécessaire.
-// ═══════════════════════════════════════
-
-// Client ID officiel de l'app "Minecraft Launcher" de Microsoft
-// Utilisé par tous les launchers tiers légitimes
 const MS_CLIENT_ID = '00000000402b5328'
 const MS_REDIRECT  = 'https://login.live.com/oauth20_desktop.srf'
 const MS_SCOPE     = 'service::user.auth.xboxlive.com::MBI_SSL'
@@ -60,11 +50,6 @@ ipcMain.on('open-log', () => {
   if (require('fs').existsSync(logPath)) shell.openPath(logPath)
 })
 
-// ═══════════════════════════════════════
-// FLUX AUTH COMPLET
-// Méthode MSA legacy (login.live.com) — même méthode que Prism/MultiMC
-// Pas besoin d'app Azure personnelle
-// ═══════════════════════════════════════
 ipcMain.handle('ms-login', async () => {
   try {
     console.log('[Auth] Étape 1 : ouverture fenêtre Microsoft...')
@@ -104,9 +89,6 @@ ipcMain.handle('ms-login', async () => {
   }
 })
 
-// ─── ÉTAPE 1 : Ouvre la fenêtre login.live.com, intercepte le redirect ───
-// Pas de serveur local — on intercepte directement l'URL de redirect
-// dans la fenêtre Electron (méthode utilisée par Prism Launcher)
 function getMicrosoftCode() {
   return new Promise((resolve, reject) => {
     const params = new URLSearchParams({

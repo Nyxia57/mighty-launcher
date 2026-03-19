@@ -1,6 +1,6 @@
-# ZenithMC Launcher
+# Mighty Launcher
 
-Launcher Minecraft moderne — plus besoin de créer une app Azure !
+Launcher Minecraft moderne
 
 ---
 
@@ -10,8 +10,6 @@ Launcher Minecraft moderne — plus besoin de créer une app Azure !
 npm install
 npm start
 ```
-
-C'est tout. Clique "Continuer avec Microsoft" dans le launcher.
 
 ---
 
@@ -25,4 +23,4 @@ npm run build -- --linux  # Linux .AppImage
 
 ---
 
-*ZenithMC v1.0.0*
+*Mighty v1.0.0*
