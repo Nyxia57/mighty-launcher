@@ -6,6 +6,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   close:        () => ipcRenderer.send('close'),
   launch:       (profile, settings) => ipcRenderer.invoke('launch-minecraft', profile, settings),
   msLogin:      () => ipcRenderer.invoke('ms-login'),
-  // Main process sends device code info while polling for the user to authenticate
   onDeviceCode: (cb) => ipcRenderer.on('ms-device-code', (_, data) => cb(data)),
+  openLog:      () => ipcRenderer.send('open-log'),
 });
