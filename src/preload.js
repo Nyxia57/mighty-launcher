@@ -1,24 +1,11 @@
-const { contextBridge, ipcRenderer } = require('electron')
+const { contextBridge, ipcRenderer } = require('electron');
 
-// ═══════════════════════════════════════
-// ZENITHMC PRELOAD
-// Expose seulement les APIs nécessaires au renderer
-// via contextBridge (sécurisé, pas d'accès Node direct)
-// ═══════════════════════════════════════
-contextBridge.exposeInMainWorld('zenith', {
-
-  // ─── Window controls ───
-  minimize: () => ipcRenderer.send('win-minimize'),
-  maximize: () => ipcRenderer.send('win-maximize'),
-  close:    () => ipcRenderer.send('win-close'),
-
-  // ─── Microsoft Auth ───
-  // Déclenche tout le flux OAuth2 → Xbox → Minecraft
-  loginMicrosoft: () => ipcRenderer.invoke('ms-login'),
-
-  // ─── Modrinth API (passé par le main pour éviter CORS) ───
-  searchModrinth: (params) => ipcRenderer.invoke('modrinth-search', params),
-
-  // ─── Platform info ───
-  platform: process.platform,
-})
+contextBridge.exposeInMainWorld('electronAPI', {
+  minimize:     () => ipcRenderer.send('minimize'),
+  maximize:     () => ipcRenderer.send('maximize'),
+  close:        () => ipcRenderer.send('close'),
+  launch:       (profile, settings) => ipcRenderer.invoke('launch-minecraft', profile, settings),
+  msLogin:      () => ipcRenderer.invoke('ms-login'),
+  // Main process sends device code info while polling for the user to authenticate
+  onDeviceCode: (cb) => ipcRenderer.on('ms-device-code', (_, data) => cb(data)),
+});

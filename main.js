@@ -4,6 +4,16 @@ const https = require('https')
 const http  = require('http')
 const { URL } = require('url')
 
+// ═══════════════════════════════════════
+// ZENITHMC — AUTH MICROSOFT / MINECRAFT
+//
+// On utilise le Client ID officiel de l'app Minecraft (Xbox)
+// C'est exactement ce que font Prism Launcher, MultiMC, etc.
+// Aucune app Azure à créer, aucun secret nécessaire.
+// ═══════════════════════════════════════
+
+// Client ID officiel de l'app "Minecraft Launcher" de Microsoft
+// Utilisé par tous les launchers tiers légitimes
 const MS_CLIENT_ID = '00000000402b5328'
 const MS_REDIRECT  = 'https://login.live.com/oauth20_desktop.srf'
 const MS_SCOPE     = 'service::user.auth.xboxlive.com::MBI_SSL'
@@ -41,9 +51,9 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
 
 // ─── WINDOW CONTROLS ───
-ipcMain.on('win-minimize', () => mainWindow?.minimize())
-ipcMain.on('win-maximize', () => mainWindow?.isMaximized() ? mainWindow.unmaximize() : mainWindow?.maximize())
-ipcMain.on('win-close',    () => mainWindow?.close())
+ipcMain.on('minimize', () => mainWindow?.minimize())
+ipcMain.on('maximize', () => mainWindow?.isMaximized() ? mainWindow.unmaximize() : mainWindow?.maximize())
+ipcMain.on('close',    () => mainWindow?.close())
 
 // ═══════════════════════════════════════
 // FLUX AUTH COMPLET
@@ -382,3 +392,115 @@ ipcMain.handle('modrinth-search', async (_, params) => {
     req.end()
   })
 })
+
+// ─── MINECRAFT LAUNCH ───
+const { spawn } = require('child_process')
+const fs   = require('fs')
+const os   = require('os')
+const path2 = require('path')
+
+ipcMain.handle('launch-minecraft', async (_, profile, settings) => {
+  try { await launchMinecraft(profile, settings); return { success: true } }
+  catch (err) { return { success: false, error: err.message } }
+})
+
+async function launchMinecraft(profile, settings) {
+  const mcDir   = profile.gameDir || getDefaultMCDir()
+  const version = profile.version
+  const javaPath= settings.javaPath || findJava()
+  const ramMin  = profile.ramMin || settings.ramMin || 512
+  const ramMax  = profile.ramMax || settings.ramMax || 2048
+
+  const vJar  = path2.join(mcDir, 'versions', version, `${version}.jar`)
+  const vJson = path2.join(mcDir, 'versions', version, `${version}.json`)
+  if (!fs.existsSync(vJar)) throw new Error(`Version ${version} non installée — lancez d'abord le launcher Mojang officiel.`)
+
+  const manifest = JSON.parse(fs.readFileSync(vJson, 'utf8'))
+  const cp        = buildCP(manifest, path2.join(mcDir, 'libraries'), vJar)
+  const nativesDir= path2.join(mcDir, 'versions', version, `${version}-natives`)
+  const vars = {
+    auth_player_name:  settings.username || settings.name || 'Player',
+    version_name:      version,
+    game_directory:    mcDir,
+    assets_root:       path2.join(mcDir, 'assets'),
+    assets_index_name: manifest.assetIndex?.id || version,
+    auth_uuid:         settings.uuid || genUUID(settings.username || settings.name),
+    auth_access_token: settings.accessToken || '0',
+    user_type:         settings.premium ? 'msa' : 'offline',
+    version_type:      manifest.type || 'release',
+  }
+  const args = [
+    `-Xms${ramMin}m`, `-Xmx${ramMax}m`,
+    `-Djava.library.path=${nativesDir}`,
+    '-cp', cp, manifest.mainClass,
+    ...buildGameArgs(manifest, vars),
+  ]
+  if (profile.jvmArgs) args.push(...profile.jvmArgs.split(' ').filter(Boolean))
+  const mc = spawn(javaPath, args, { cwd: mcDir, detached: true, stdio: 'ignore' })
+  mc.unref()
+}
+
+function buildCP(manifest, libDir, jar) {
+  const sep  = process.platform === 'win32' ? ';' : ':'
+  const jars = [jar]
+  for (const lib of manifest.libraries || []) {
+    if (lib.rules && !isAllowed(lib.rules)) continue
+    const p = lib.downloads?.artifact?.path
+    if (!p) continue
+    const full = path2.join(libDir, p.replace(/\//g, path2.sep))
+    if (fs.existsSync(full)) jars.push(full)
+  }
+  return jars.join(sep)
+}
+function isAllowed(rules) {
+  let ok = false
+  const m = { windows: 'win32', osx: 'darwin', linux: 'linux' }
+  for (const r of rules) {
+    const a = r.action === 'allow'
+    if (!r.os) { ok = a; continue }
+    if (m[r.os.name] === process.platform) ok = a
+  }
+  return ok
+}
+function buildGameArgs(manifest, vars) {
+  const sub = s => s.replace(/\$\{(\w+)\}/g, (_, k) => vars[k] || '')
+  const args = []
+  if (manifest.minecraftArguments) manifest.minecraftArguments.split(' ').forEach(a => args.push(sub(a)))
+  else if (manifest.arguments?.game) {
+    for (const a of manifest.arguments.game) {
+      if (typeof a === 'string') args.push(sub(a))
+      else if (a.rules && isAllowed(a.rules)) (Array.isArray(a.value) ? a.value : [a.value]).forEach(v => args.push(sub(v)))
+    }
+  }
+  return args
+}
+function getDefaultMCDir() {
+  const h = os.homedir()
+  if (process.platform === 'win32') return path2.join(h, 'AppData', 'Roaming', '.minecraft')
+  if (process.platform === 'darwin') return path2.join(h, 'Library', 'Application Support', 'minecraft')
+  return path2.join(h, '.minecraft')
+}
+function findJava() {
+  if (process.platform === 'win32') {
+    for (const base of ['C:\\Program Files\\Java','C:\\Program Files\\Eclipse Adoptium']) {
+      if (fs.existsSync(base)) {
+        const dirs = fs.readdirSync(base).filter(d => /^jdk|^jre|^temurin/i.test(d)).sort()
+        if (dirs.length) return path2.join(base, dirs[dirs.length-1], 'bin', 'javaw.exe')
+      }
+    }
+    const mcJre = path2.join(os.homedir(), 'AppData', 'Roaming', '.minecraft', 'runtime')
+    if (fs.existsSync(mcJre)) {
+      for (const jrt of ['java-runtime-delta','java-runtime-gamma','java-runtime-alpha']) {
+        const p = path2.join(mcJre, jrt, 'windows-x64', jrt, 'bin', 'javaw.exe')
+        if (fs.existsSync(p)) return p
+      }
+    }
+    return 'javaw'
+  }
+  return 'java'
+}
+function genUUID(name) {
+  let h = 0
+  for (const c of 'OfflinePlayer:'+(name||'Player')) { h = ((h<<5)-h)+c.charCodeAt(0); h|=0 }
+  return `00000000-0000-0000-0000-${Math.abs(h).toString(16).padStart(12,'0')}`
+}
