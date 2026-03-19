@@ -1,7 +1,7 @@
 {
-  "name": "zenithmc",
-  "version": "4.0.0",
-  "description": "ZenithMC Launcher — Feather style, Modrinth API, Microsoft Auth",
+  "name": "mighty",
+  "version": "1.0.0",
+  "description": "Mighty Launcher",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -9,8 +9,8 @@
     "build:linux": "electron-builder --linux"
   },
   "build": {
-    "appId": "com.zenithmc.launcher",
-    "productName": "ZenithMC",
+    "appId": "com.mighty.launcher",
+    "productName": "Mighty",
     "files": [
       "src/**/*",
       "main.js",
