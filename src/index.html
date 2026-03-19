@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>ZenithMC</title>
+<title>Mighty Launcher</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -609,6 +609,31 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
 .ppc-name{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ppc-meta{font-size:10px;color:var(--text2);margin-top:1px;font-family:var(--mono)}
 .ppc-already{font-size:9px;color:var(--accent);margin-top:2px;font-weight:700}
+
+/* ── MULTI-ACCOUNT DROPDOWN ──────────────────── */
+.acct-dd{position:absolute;top:calc(var(--topbar) + 6px);right:10px;
+  background:var(--bg1);border:1px solid var(--border2);border-radius:11px;
+  min-width:260px;max-width:300px;box-shadow:0 10px 40px rgba(0,0,0,.7);
+  z-index:500;overflow:hidden;display:none}
+.acct-dd.open{display:block;animation:mIn .15s ease}
+.acct-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;transition:.12s;
+  border-left:3px solid transparent}
+.acct-item:hover{background:var(--bg2)}
+.acct-item.cur{border-left-color:var(--accent);background:var(--accent-dim)}
+.acct-av{width:30px;height:30px;border-radius:6px;overflow:hidden;flex-shrink:0;
+  background:var(--bg3);display:flex;align-items:center;justify-content:center}
+.acct-av img{width:100%;height:100%;object-fit:cover}
+.acct-av svg{width:15px;height:15px;color:var(--text2)}
+.acct-info{flex:1;min-width:0}
+.acct-nm{font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-tp{font-size:10px;color:var(--text2);margin-top:1px}
+.acct-sep{height:1px;background:var(--border);margin:3px 0}
+.acct-btn{display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;
+  font-size:12.5px;font-weight:600;color:var(--text1);transition:.12s;font-family:var(--font)}
+.acct-btn:hover{background:var(--bg2);color:var(--text0)}
+.acct-btn svg{width:14px;height:14px;flex-shrink:0}
+.acct-btn.danger{color:var(--red)}
+.acct-btn.danger:hover{background:rgba(248,113,113,.08)}
 </style>
 </head>
 <body>
@@ -621,7 +646,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
       <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" stroke="#4ade80" stroke-width="1.5" stroke-linejoin="round"/>
       <path d="M12 2v20M2 7l10 5 10-5" stroke="#4ade80" stroke-width="1.2" stroke-linejoin="round" opacity=".6"/>
     </svg>
-    <span class="tb-logo-name">ZENITHMC</span>
+    <span class="tb-logo-name">MIGHTY</span>
   </div>
 
   <div class="tb-nav">
@@ -642,7 +667,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
   <div class="tb-spacer"></div>
 
   <div class="tb-right">
-    <div class="tb-user" id="tb-user-chip" onclick="onUserChipClick()" title="Compte Microsoft">
+    <div class="tb-user" id="tb-user-chip" onclick="toggleAcctDD(event)" title="Comptes">
       <div class="tb-avatar" id="tb-avatar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </div>
@@ -701,7 +726,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
     <div id="hero-ver-badge" class="hero-ver-badge" style="display:none"></div>
     <div class="hero-particles" id="particles"></div>
     <div class="hero-content">
-      <div class="hero-title">Bienvenue sur <span>ZenithMC</span></div>
+      <div class="hero-title">Bienvenue sur <span>Mighty</span></div>
       <div class="hero-sub" id="hero-sub">Aucun profil sélectionné — créez un profil pour commencer</div>
     </div>
     <div class="hero-launch-strip">
@@ -736,22 +761,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
     <div class="sprog" id="sprog"><div class="sprogbar" id="sprogbar"></div></div>
   </div>
 
-  <div class="bottom-panels">
+  <div class="bottom-panels" style="grid-template-columns:1fr">
     <div class="panel">
       <div class="panel-hd">
-        <span class="panel-title">Dernières nouvelles</span>
-        <span class="panel-link">Voir tout</span>
+        <span class="panel-title" style="display:flex;align-items:center;gap:7px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Amis
+        </span>
+        <span class="panel-link" onclick="openAddFriend()">+ Ajouter</span>
       </div>
-      <div class="panel-body">
-        <div class="news-scroll" id="news-scroll"></div>
-      </div>
-    </div>
-    <div class="panel">
-      <div class="panel-hd">
-        <span class="panel-title">Serveurs populaires</span>
-        <span class="panel-link">Voir plus</span>
-      </div>
-      <div class="panel-body" id="servers-list"></div>
+      <div class="panel-body" id="friends-list"></div>
     </div>
   </div>
 </div>
@@ -803,10 +822,20 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
   <div class="page-inner">
     <div class="profiles-hd">
       <h2>Mes profils</h2>
-      <button class="btn btn-green" onclick="openCreateProfile()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Nouveau profil
-      </button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="importProfiles()" title="Importer (.json)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importer
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="exportProfiles()" title="Exporter (.json)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exporter
+        </button>
+        <button class="btn btn-green" onclick="openCreateProfile()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nouveau profil
+        </button>
+      </div>
     </div>
     <div class="pgrid" id="pgrid">
       <div class="add-pcard" onclick="openCreateProfile()">
@@ -884,11 +913,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
         <div class="form-row">
           <div class="sg"><label class="sl">Version Minecraft *</label>
             <select class="ssel" id="pm-ver">
-              <option value="1.21.4">1.21.4</option><option value="1.21.1">1.21.1</option>
-              <option value="1.20.4">1.20.4</option><option value="1.20.1">1.20.1</option>
-              <option value="1.19.4">1.19.4</option><option value="1.18.2">1.18.2</option>
-              <option value="1.16.5">1.16.5</option><option value="1.12.2">1.12.2</option>
-              <option value="1.8.9">1.8.9</option>
+              <option value="">Chargement des versions…</option>
+            </select>
+          </div>
+          <div class="sg"><label class="sl">Type</label>
+            <select class="ssel" id="pm-ver-type" onchange="filterVersions()">
+              <option value="release">Releases uniquement</option>
+              <option value="all">Toutes (snapshots incluses)</option>
             </select>
           </div>
           <div class="sg"><label class="sl">Loader</label>
@@ -1046,20 +1077,6 @@ function navPage(id, el) {
 }
 
 // ─── PLAY ──────────────────────────────────────
-const NEWS_DATA=[
-  {tag:'MINECRAFT',title:'Minecraft 1.21.4 — Pale Garden Update',date:'13 nov. 2024',color:'#0d2a1a'},
-  {tag:'MOD',title:'Fabric Loader 0.16.9 disponible',date:'2 jan. 2025',color:'#0d1a2a'},
-  {tag:'FORGE',title:'Forge 54.1 compatible 1.21.4',date:'18 nov. 2024',color:'#2a1a0d'},
-  {tag:'ZENITHMC',title:'ZenithMC v2 — Intégration Modrinth',date:'Aujourd\'hui',color:'#0d2a0d'},
-];
-
-const SERVERS=[
-  {name:'Hypixel',ip:'mc.hypixel.net',players:45000,icon:'🟡'},
-  {name:'CubeCraft',ip:'play.cubecraft.net',players:12000,icon:'🟢'},
-  {name:'Mineplex',ip:'us.mineplex.com',players:3500,icon:'🔵'},
-  {name:'2b2t',ip:'2b2t.org',players:600,icon:'🔴'},
-  {name:'MC-Central',ip:'mccentral.org',players:1800,icon:'🟣'},
-];
 
 function renderPlay() {
   const active=P.find(p=>p.active)||P[0];
@@ -1086,28 +1103,48 @@ function renderPlay() {
     if(hi){hi.style.backgroundImage='';hi.style.background='linear-gradient(135deg,#0a1a10 0%,#0d1a26 50%,#150d1a 100%)';}
   }
 
-  // News
-  const ns=document.getElementById('news-scroll');
-  ns.innerHTML=NEWS_DATA.map(n=>`
-    <div class="news-card">
-      <div class="news-card-img" style="background:${n.color||'var(--bg4)'}">
-        <div class="news-card-img"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:32px;height:32px;color:var(--border2)"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg></div>
-      </div>
-      <div class="news-card-body">
-        <div class="news-tag">${n.tag}</div>
-        <div class="news-title">${n.title}</div>
-        <div class="news-date">${n.date}</div>
-      </div>
-    </div>`).join('');
+  renderFriends();
+}
 
-  // Servers
-  const sl=document.getElementById('servers-list');
-  sl.innerHTML=SERVERS.map(s=>`
+function renderFriends(){
+  const el=document.getElementById('friends-list'); if(!el)return;
+  const friends=JSON.parse(localStorage.getItem('mighty_friends')||'[]');
+  if(!friends.length){
+    el.innerHTML=`<div class="empty" style="padding:28px 20px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:28px;height:28px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <p>Aucun ami — cliquez sur "+ Ajouter"</p>
+    </div>`;
+    return;
+  }
+  el.innerHTML=friends.map((f,i)=>`
     <div class="server-row">
-      <div class="srv-icon">${s.icon}</div>
-      <span class="srv-name">${s.name}</span>
-      <div class="srv-online"><div class="dot-online"></div><span class="srv-players">${fmtNum(s.players)}</span></div>
+      <div class="srv-icon" style="overflow:hidden;border-radius:6px">
+        <img src="https://mc-heads.net/avatar/${esc(f.uuid||f.name)}/22" onerror="this.style.display='none'" style="width:22px;height:22px;display:block">
+      </div>
+      <span class="srv-name">${esc(f.name)}</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        ${f.note?`<span style="font-size:10px;color:var(--text2)">${esc(f.note)}</span>`:''}
+        <button class="pic-btn del" onclick="removeFriend(${i})" style="width:22px;height:22px;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
     </div>`).join('');
+}
+
+function openAddFriend(){
+  const name=prompt('Pseudo Minecraft de l\'ami :');
+  if(!name||!name.trim())return;
+  const note=prompt('Note / description (optionnel) :','') || '';
+  const friends=JSON.parse(localStorage.getItem('mighty_friends')||'[]');
+  friends.push({name:name.trim(), note:note.trim(), uuid:name.trim()});
+  localStorage.setItem('mighty_friends',JSON.stringify(friends));
+  renderFriends();
+}
+function removeFriend(i){
+  const friends=JSON.parse(localStorage.getItem('mighty_friends')||'[]');
+  friends.splice(i,1);
+  localStorage.setItem('mighty_friends',JSON.stringify(friends));
+  renderFriends();
 }
 
 // ─── LAUNCH ──────────────────────────────────────
@@ -1132,7 +1169,35 @@ function doLaunch(){
       dot.className='sdot run';
       txt.textContent=`Minecraft ${active.version} en cours d'exécution`;
       prog.style.display='none';
-      if(window.electronAPI?.launch) window.electronAPI.launch(active,{username:(MS&&MS.name)||'Joueur',accessToken:(MS&&MS.accessToken)||'0',uuid:(MS&&MS.uuid)||'00000000-0000-0000-0000-000000000000',premium:!!(MS&&MS.premium),ramMin:active.ramMin||G.rmin||512,ramMax:active.ramMax||G.rmax||2048,jvmArgs:active.jvmArgs||'',javaPath:G.java||''});
+      if(window.electronAPI?.launch){
+        window.electronAPI.launch(active,{
+          username:(MS&&MS.name)||'Joueur',
+          accessToken:(MS&&MS.accessToken)||'0',
+          uuid:(MS&&MS.uuid)||'00000000-0000-0000-0000-000000000000',
+          premium:!!(MS&&MS.premium),
+          ramMin:active.ramMin||G.rmin||512,
+          ramMax:active.ramMax||G.rmax||2048,
+          jvmArgs:active.jvmArgs||'',
+          javaPath:G.java||''
+        }).then(res=>{
+          if(res&&!res.success){
+            dot.className='sdot err';
+            // Show first line of error, truncated
+            const firstLine=(res.error||'Erreur inconnue').split('\n')[0].substring(0,120);
+            txt.innerHTML=`❌ ${firstLine} <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="window.electronAPI?.openLog&&window.electronAPI.openLog()">Voir log</span>`;
+            prog.style.display='none';
+          } else if(res&&res.success){
+            // Game started successfully — wait a moment then reset status
+            setTimeout(()=>{
+              dot.className='sdot run';
+              txt.textContent=`Minecraft ${active.version} lancé`;
+            },500);
+          }
+        }).catch(e=>{
+          dot.className='sdot err';
+          txt.textContent='❌ Erreur de communication avec le launcher';
+        });
+      }
       return;
     }
     txt.textContent=steps[i].t; bar.style.width=steps[i].p+'%'; i++;
@@ -1324,16 +1389,123 @@ function pCardHTML(p){
 }
 
 // ─── PROFILE CRUD ──────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// MINECRAFT VERSION LOADER (Mojang API)
+// ═══════════════════════════════════════════════════════
+let MC_VERSIONS = []; // cached version list
+
+async function loadMCVersions() {
+  const sel = document.getElementById('pm-ver');
+  if (!sel) return;
+
+  // Use cached if available
+  if (MC_VERSIONS.length > 0) { populateVersionSelect(sel); return; }
+
+  try {
+    const res = await fetch('https://launchermeta.mojang.com/mc/game/version_manifest_v2.json');
+    const data = await res.json();
+    MC_VERSIONS = data.versions || [];
+    populateVersionSelect(sel);
+  } catch (e) {
+    // Fallback to hardcoded list if no internet
+    MC_VERSIONS = FALLBACK_VERSIONS.map(v => ({ id: v.id, type: v.type }));
+    populateVersionSelect(sel);
+  }
+}
+
+function filterVersions() {
+  const sel = document.getElementById('pm-ver');
+  const cur = sel?.value;
+  if (sel) populateVersionSelect(sel, cur);
+}
+
+function populateVersionSelect(sel, keepValue) {
+  const typeFilter = document.getElementById('pm-ver-type')?.value || 'release';
+  const filtered = typeFilter === 'all'
+    ? MC_VERSIONS
+    : MC_VERSIONS.filter(v => v.type === 'release');
+
+  const prev = keepValue || sel.value;
+
+  // Group by major version for releases
+  sel.innerHTML = '';
+  let curGroup = null;
+
+  for (const v of filtered) {
+    if (v.type === 'release') {
+      const major = v.id.split('.').slice(0, 2).join('.');
+      const grpLabel = major + (VERSION_NAMES[v.id] ? ` — ${VERSION_NAMES[v.id]}` : '');
+      if (major !== curGroup) {
+        curGroup = major;
+        const grp = document.createElement('optgroup');
+        grp.label = grpLabel;
+        sel.appendChild(grp);
+      }
+      const opt = document.createElement('option');
+      opt.value = v.id; opt.textContent = v.id;
+      sel.lastChild.appendChild(opt);
+    } else {
+      // Snapshots/betas go in a flat optgroup at the top
+      if (!sel.querySelector('optgroup[label="Snapshots & Pre-releases"]')) {
+        const grp = document.createElement('optgroup');
+        grp.label = 'Snapshots & Pre-releases';
+        sel.insertBefore(grp, sel.firstChild);
+      }
+      const opt = document.createElement('option');
+      opt.value = v.id; opt.textContent = `${v.id} (${v.type})`;
+      sel.querySelector('optgroup[label="Snapshots & Pre-releases"]').appendChild(opt);
+    }
+  }
+
+  // Restore previous selection if possible
+  if (prev && [...sel.options].some(o => o.value === prev)) {
+    sel.value = prev;
+  } else if (sel.options.length > 0) {
+    // Default to first release
+    const firstRelease = [...sel.options].find(o => o.value && !o.value.includes('snapshot'));
+    sel.value = firstRelease?.value || sel.options[0]?.value || '1.21.4';
+  }
+}
+
+// Fallback version list (used when offline)
+const FALLBACK_VERSIONS = [
+  {id:'1.21.4',type:'release'},{id:'1.21.3',type:'release'},{id:'1.21.1',type:'release'},{id:'1.21',type:'release'},
+  {id:'1.20.6',type:'release'},{id:'1.20.5',type:'release'},{id:'1.20.4',type:'release'},{id:'1.20.3',type:'release'},{id:'1.20.2',type:'release'},{id:'1.20.1',type:'release'},{id:'1.20',type:'release'},
+  {id:'1.19.4',type:'release'},{id:'1.19.3',type:'release'},{id:'1.19.2',type:'release'},{id:'1.19.1',type:'release'},{id:'1.19',type:'release'},
+  {id:'1.18.2',type:'release'},{id:'1.18.1',type:'release'},{id:'1.18',type:'release'},
+  {id:'1.17.1',type:'release'},{id:'1.17',type:'release'},
+  {id:'1.16.5',type:'release'},{id:'1.16.4',type:'release'},{id:'1.16.3',type:'release'},{id:'1.16.2',type:'release'},{id:'1.16.1',type:'release'},{id:'1.16',type:'release'},
+  {id:'1.15.2',type:'release'},{id:'1.15.1',type:'release'},{id:'1.15',type:'release'},
+  {id:'1.14.4',type:'release'},{id:'1.14.3',type:'release'},{id:'1.14.2',type:'release'},{id:'1.14.1',type:'release'},{id:'1.14',type:'release'},
+  {id:'1.13.2',type:'release'},{id:'1.13.1',type:'release'},{id:'1.13',type:'release'},
+  {id:'1.12.2',type:'release'},{id:'1.12.1',type:'release'},{id:'1.12',type:'release'},
+  {id:'1.11.2',type:'release'},{id:'1.11',type:'release'},
+  {id:'1.10.2',type:'release'},{id:'1.10',type:'release'},
+  {id:'1.9.4',type:'release'},{id:'1.9.2',type:'release'},{id:'1.9',type:'release'},
+  {id:'1.8.9',type:'release'},{id:'1.8.8',type:'release'},{id:'1.8.7',type:'release'},{id:'1.8.4',type:'release'},{id:'1.8.3',type:'release'},{id:'1.8.1',type:'release'},{id:'1.8',type:'release'},
+  {id:'1.7.10',type:'release'},{id:'1.7.9',type:'release'},{id:'1.7.5',type:'release'},{id:'1.7.4',type:'release'},{id:'1.7.2',type:'release'},
+  {id:'1.6.4',type:'release'},{id:'1.6.2',type:'release'},{id:'1.6.1',type:'release'},
+  {id:'1.5.2',type:'release'},{id:'1.5.1',type:'release'},
+  {id:'1.4.7',type:'release'},{id:'1.4.6',type:'release'},{id:'1.4.5',type:'release'},{id:'1.4.2',type:'release'},
+  {id:'1.3.2',type:'release'},{id:'1.3.1',type:'release'},
+  {id:'1.2.5',type:'release'},{id:'1.2.4',type:'release'},{id:'1.2.3',type:'release'},{id:'1.2.2',type:'release'},{id:'1.2.1',type:'release'},
+  {id:'1.1',type:'release'},{id:'1.0',type:'release'},
+  {id:'b1.8.1',type:'old_beta'},{id:'b1.7.3',type:'old_beta'},{id:'b1.6.6',type:'old_beta'},
+  {id:'a1.2.6',type:'old_alpha'},{id:'a1.1.2_01',type:'old_alpha'},
+];
+
 function openCreateProfile(){
   editId=null;tmpMods=[];tmpRP=[];tmpShaders=[];tmpBanner='linear-gradient(135deg,#0d2a3d,#1a3a1d)';
   document.getElementById('pm-title').textContent='Créer un profil';
   ['pm-name','pm-lver','pm-jvm','pm-gamedir'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('pm-rmin').value='';document.getElementById('pm-rmax').value='';
-  document.getElementById('pm-ver').value='1.21.4';document.getElementById('pm-loader').value='fabric';
+  document.getElementById('pm-loader').value='fabric';
   document.querySelectorAll('.bsw').forEach((b,i)=>b.style.border=i===0?'2px solid #fff':'2px solid transparent');
   mTab('gen',document.querySelector('.mtab'));
   renderTmpLists();
   openOv('ov-profile');
+  // Load versions from Mojang API — sets selector to latest release by default
+  loadMCVersions();
 }
 
 function openEditProfile(id,e){
@@ -1345,7 +1517,6 @@ function openEditProfile(id,e){
   tmpBanner=p.banner||'linear-gradient(135deg,#0d2a3d,#1a3a1d)';
   document.getElementById('pm-title').textContent='Modifier le profil';
   document.getElementById('pm-name').value=p.name;
-  document.getElementById('pm-ver').value=p.version;
   document.getElementById('pm-loader').value=p.loader;
   document.getElementById('pm-lver').value=p.lver||'';
   document.getElementById('pm-rmin').value=p.ramMin||'';
@@ -1356,6 +1527,22 @@ function openEditProfile(id,e){
   mTab('gen',document.querySelector('.mtab'));
   renderTmpLists();
   openOv('ov-profile');
+  // Load versions and restore the profile's current version in selector
+  loadMCVersions().then ? loadMCVersions().then(()=>{
+    const sel=document.getElementById('pm-ver');
+    if(sel&&p.version){
+      // Add the version as option if not present (e.g. snapshot)
+      if(![...sel.options].some(o=>o.value===p.version)){
+        const opt=document.createElement('option');
+        opt.value=p.version;opt.textContent=p.version;
+        sel.insertBefore(opt,sel.firstChild);
+      }
+      sel.value=p.version;
+    }
+  }) : setTimeout(()=>{
+    const sel=document.getElementById('pm-ver');
+    if(sel&&p.version){sel.value=p.version;}
+  },300);
 }
 
 function saveProfile(){
@@ -1479,19 +1666,78 @@ function fmtNum(n){if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3
 function flash(id){const e=document.getElementById(id);e.style.borderColor='var(--red)';e.focus();setTimeout(()=>e.style.borderColor='',1500)}
 function emptyHTML(m){return`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:28px;height:28px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>${m}</p></div>`}
 
+
+// ═══════════════════════════════════════════════════════
+// IMPORT / EXPORT PROFILES
+// ═══════════════════════════════════════════════════════
+function exportProfiles(){
+  const data={version:1,profiles:P,exported:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='mighty-profiles.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importProfiles(){
+  const input=document.createElement('input');
+  input.type='file'; input.accept='.json';
+  input.onchange=e=>{
+    const file=e.target.files[0]; if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const data=JSON.parse(ev.target.result);
+        const incoming=data.profiles||data; // support both formats
+        if(!Array.isArray(incoming)){alert('Format invalide');return;}
+        const count=incoming.length;
+        if(!confirm(`Importer ${count} profil(s) ? Les profils existants seront conservés.`))return;
+        // Merge — avoid duplicates by id
+        let added=0;
+        for(const p of incoming){
+          if(!P.find(x=>x.id===p.id)){P.push({...p,active:false});added++;}
+        }
+        saveP(); renderProfiles(); renderPlay();
+        alert(`${added} profil(s) importé(s) avec succès.`);
+      }catch(e){alert('Erreur lors de la lecture du fichier : '+e.message);}
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
 // ─── INIT ──────────────────────────────────────
 // MS declared here so it's available for init block AND all functions below
-let MS = JSON.parse(localStorage.getItem('z_ms') || 'null');
-(()=>{updateUserChip();loadG();renderPlay();})();
+// ── MULTI-ACCOUNT STATE ──────────────────────────────
+// ACCOUNTS: array of all saved accounts
+// MS: currently active account (shorthand)
+let ACCOUNTS = JSON.parse(localStorage.getItem('mighty_accounts') || '[]');
+let MS = ACCOUNTS.find(a=>a.active) || null;
+(()=>{updateUserChip();renderAccountsDropdown();loadG();renderPlay();})();
 
 // ═══════════════════════════════════════════════════════
 // VERSION BACKGROUNDS
 // ═══════════════════════════════════════════════════════
 const VERSION_NAMES={
-  '1.21.4':'Pale Garden','1.21.3':'Pale Garden','1.21.1':'Tricky Trials',
-  '1.20.6':'Trails & Tales','1.20.4':'Trails & Tales','1.20.1':'Trails & Tales',
-  '1.19.4':'The Wild Update','1.18.2':'Caves & Cliffs Pt.2','1.17.1':'Caves & Cliffs Pt.1',
-  '1.16.5':'Nether Update','1.12.2':'World of Color Update','1.8.9':'Bountiful Update',
+  '1.21.4':'Pale Garden','1.21.3':'Pale Garden','1.21.2':'Pale Garden','1.21.1':'Tricky Trials','1.21':'Tricky Trials',
+  '1.20.6':'Trails & Tales','1.20.5':'Trails & Tales','1.20.4':'Trails & Tales','1.20.3':'Trails & Tales',
+  '1.20.2':'Trails & Tales','1.20.1':'Trails & Tales','1.20':'Trails & Tales',
+  '1.19.4':'The Wild Update','1.19.3':'The Wild Update','1.19.2':'The Wild Update','1.19.1':'The Wild Update','1.19':'The Wild Update',
+  '1.18.2':'Caves & Cliffs Pt.2','1.18.1':'Caves & Cliffs Pt.2','1.18':'Caves & Cliffs Pt.2',
+  '1.17.1':'Caves & Cliffs Pt.1','1.17':'Caves & Cliffs Pt.1',
+  '1.16.5':'Nether Update','1.16.4':'Nether Update','1.16.3':'Nether Update','1.16.2':'Nether Update','1.16.1':'Nether Update','1.16':'Nether Update',
+  '1.15.2':'Buzzy Bees','1.15.1':'Buzzy Bees','1.15':'Buzzy Bees',
+  '1.14.4':'Village & Pillage','1.14.3':'Village & Pillage','1.14.2':'Village & Pillage','1.14.1':'Village & Pillage','1.14':'Village & Pillage',
+  '1.13.2':'Update Aquatic','1.13.1':'Update Aquatic','1.13':'Update Aquatic',
+  '1.12.2':'World of Color','1.12.1':'World of Color','1.12':'World of Color',
+  '1.11.2':'Exploration Update','1.11':'Exploration Update','1.10.2':'Frostburn Update','1.10':'Frostburn Update',
+  '1.9.4':'Combat Update','1.9.2':'Combat Update','1.9':'Combat Update',
+  '1.8.9':'Bountiful Update','1.8.8':'Bountiful Update','1.8.4':'Bountiful Update','1.8':'Bountiful Update',
+  '1.7.10':'Changed the World','1.7.9':'Changed the World','1.7.2':'Changed the World',
+  '1.6.4':'Horse Update','1.6.2':'Horse Update','1.6.1':'Horse Update',
+  '1.5.2':'Redstone Update','1.5.1':'Redstone Update',
+  '1.4.7':'Pretty Scary Update','1.4.5':'Pretty Scary Update',
+  '1.3.2':'Easy Update','1.2.5':'Moar Stacked','1.1':'Adventure','1.0':'Release',
 };
 // Official Minecraft key art by version
 const VERSION_IMG={
@@ -1504,13 +1750,27 @@ const VERSION_IMG={
 // Gradient fallbacks per major (no internet needed)
 const VERSION_GRAD={
   '1.21':'linear-gradient(160deg,#071a09 0%,#0e3316 40%,#071a0e 100%)',
-  '1.20':'linear-gradient(160deg,#16140a 0%,#2e2a0c 45%,#16140a 100%)',
-  '1.19':'linear-gradient(160deg,#070f1a 0%,#0e2416 45%,#071014 100%)',
-  '1.18':'linear-gradient(160deg,#07101e 0%,#0e2450 45%,#071018 100%)',
-  '1.17':'linear-gradient(160deg,#070e20 0%,#142858 45%,#070e18 100%)',
-  '1.16':'linear-gradient(160deg,#1a0707 0%,#4a1205 45%,#1a0707 100%)',
-  '1.12':'linear-gradient(160deg,#120726 0%,#2e1260 45%,#12071a 100%)',
-  '1.8' :'linear-gradient(160deg,#080808 0%,#141420 45%,#080808 100%)',
+  '1.20':'linear-gradient(160deg,#1a1505 0%,#332e08 45%,#1a1505 100%)',
+  '1.19':'linear-gradient(160deg,#040f18 0%,#0b2232 45%,#091828 100%)',
+  '1.18':'linear-gradient(160deg,#06101e 0%,#0e2848 45%,#081420 100%)',
+  '1.17':'linear-gradient(160deg,#08102a 0%,#162258 45%,#0a1630 100%)',
+  '1.16':'linear-gradient(160deg,#1a0600 0%,#4a1000 45%,#1a0600 100%)',
+  '1.15':'linear-gradient(160deg,#0e1a04 0%,#243a08 45%,#0e1a04 100%)',
+  '1.14':'linear-gradient(160deg,#1a1008 0%,#3a2814 45%,#1a1008 100%)',
+  '1.13':'linear-gradient(160deg,#04121a 0%,#082838 45%,#041520 100%)',
+  '1.12':'linear-gradient(160deg,#0e0428 0%,#28106a 45%,#0e0428 100%)',
+  '1.11':'linear-gradient(160deg,#121208 0%,#2a2a14 45%,#121208 100%)',
+  '1.10':'linear-gradient(160deg,#080e14 0%,#1a2a3a 45%,#0a121e 100%)',
+  '1.9' :'linear-gradient(160deg,#100808 0%,#281010 45%,#100808 100%)',
+  '1.8' :'linear-gradient(160deg,#080808 0%,#181818 45%,#080808 100%)',
+  '1.7' :'linear-gradient(160deg,#060e06 0%,#142414 45%,#060e06 100%)',
+  '1.6' :'linear-gradient(160deg,#140c04 0%,#2e1e08 45%,#140c04 100%)',
+  '1.5' :'linear-gradient(160deg,#0e0808 0%,#241010 45%,#0e0808 100%)',
+  '1.4' :'linear-gradient(160deg,#040404 0%,#141428 45%,#040404 100%)',
+  '1.3' :'linear-gradient(160deg,#0a0a0a 0%,#1a1a1a 45%,#0a0a0a 100%)',
+  '1.2' :'linear-gradient(160deg,#080808 0%,#181818 45%,#080808 100%)',
+  '1.1' :'linear-gradient(160deg,#060606 0%,#141414 45%,#060606 100%)',
+  '1.0' :'linear-gradient(160deg,#040404 0%,#101010 45%,#040404 100%)',
 };
 function getVerGrad(ver){
   for(const k of Object.keys(VERSION_GRAD)){if(ver.startsWith(k))return VERSION_GRAD[k];}
@@ -1537,91 +1797,64 @@ function applyHeroBg(ver){
 // ═══════════════════════════════════════════════════════
 // (MS variable declared above near init block)
 
-function onUserChipClick(){if(MS&&MS.name)openMSLoggedIn();else openMSLogin();}
 
-function openMSLogin(){
-  document.getElementById('ms-modal-title').textContent='Connexion Microsoft';
-  document.getElementById('ms-modal-body').innerHTML=`
-    <div class="ms-login-box">
-      <div class="ms-logo" style="background:#107c10">
-        <svg viewBox="0 0 21 21" style="width:26px;height:26px">
-          <rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-          <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-        </svg>
-      </div>
-      <div class="ms-login-title">Se connecter avec Microsoft</div>
-      <div class="ms-login-sub">Connectez votre compte Microsoft (Mojang) pour jouer avec votre licence Minecraft Java Edition officielle. Aucune donnée ne quitte votre machine.</div>
-      <button class="btn-ms" onclick="startMSAuth()">
-        <svg viewBox="0 0 21 21" style="width:16px;height:16px;flex-shrink:0"><rect x="1" y="1" width="9" height="9" fill="#fff"/><rect x="11" y="1" width="9" height="9" fill="#fff"/><rect x="1" y="11" width="9" height="9" fill="#fff"/><rect x="11" y="11" width="9" height="9" fill="#fff"/></svg>
-        Se connecter avec Microsoft
-      </button>
-      <div style="font-size:11px;color:var(--text2)">Ou jouer <span style="color:var(--accent);cursor:pointer;font-weight:700;text-decoration:underline" onclick="useOfflineMode()">en mode hors-ligne</span> avec un pseudo personnalisé</div>
-    </div>`;
-  openOv('ov-mslogin');
+// ═══════════════════════════════════════════════════════
+// MULTI-ACCOUNT SYSTEM
+// ═══════════════════════════════════════════════════════
+
+function saveAccounts(){localStorage.setItem('mighty_accounts',JSON.stringify(ACCOUNTS));}
+
+function setActiveAccount(idx){
+  ACCOUNTS.forEach((a,i)=>a.active=i===idx);
+  MS=ACCOUNTS[idx]||null;
+  saveAccounts();updateUserChip();renderAccountsDropdown();renderPlay();
 }
 
-function openMSLoggedIn(){
-  document.getElementById('ms-modal-title').textContent='Mon compte';
-  document.getElementById('ms-modal-body').innerHTML=`
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="ms-user-info">
-        <div class="ms-avatar-big">${MS.avatar?`<img src="${MS.avatar}" onerror="this.style.display='none'">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'}</div>
-        <div>
-          <div class="ms-uname">${esc(MS.name)}</div>
-          <div class="ms-uemail">${esc(MS.email||'')}</div>
-          <div class="ms-ustatus ${MS.premium?'premium':'offline-ms'}">${MS.premium?'✓ Licence Minecraft officielle':'Mode hors-ligne'}</div>
-        </div>
-      </div>
-      <button class="btn btn-danger" style="width:100%;justify-content:center" onclick="logoutMS()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Se déconnecter
-      </button>
-    </div>`;
-  openOv('ov-mslogin');
+function removeAccount(idx,e){
+  if(e)e.stopPropagation();
+  ACCOUNTS.splice(idx,1);
+  MS=ACCOUNTS.find(a=>a.active)||ACCOUNTS[0]||null;
+  if(MS&&!MS.active){MS.active=true;}
+  saveAccounts();updateUserChip();renderAccountsDropdown();renderPlay();
 }
 
-async function startMSAuth(){
-  const body=document.getElementById('ms-modal-body');
-  body.innerHTML='<div class="ms-loading"><div class="spinner"></div><p>Ouverture de la page Microsoft…</p><p style="font-size:11px;color:var(--text2);margin-top:6px">Connectez-vous dans la fenêtre qui s\'ouvre.</p></div>';
+function toggleAcctDD(e){
+  if(e)e.stopPropagation();
+  const dd=document.getElementById('acct-dd');
+  if(!dd)return;
+  if(dd.classList.contains('open')){closeAcctDD();return;}
+  renderAccountsDropdown();
+  dd.classList.add('open');
+  setTimeout(()=>document.addEventListener('click',closeAcctDDOutside,{once:true}),0);
+}
+function closeAcctDD(){document.getElementById('acct-dd')?.classList.remove('open');}
+function closeAcctDDOutside(e){
+  const dd=document.getElementById('acct-dd');
+  if(dd&&!dd.contains(e.target))closeAcctDD();
+  else if(dd&&dd.classList.contains('open'))document.addEventListener('click',closeAcctDDOutside,{once:true});
+}
 
-  // Electron : ouvre une fenêtre login.live.com intégrée
-  if(window.electronAPI?.msLogin){
-    const result=await window.electronAPI.msLogin();
-    if(result&&result.success){
-      MS={
-        name: result.username,
-        uuid: result.uuid,
-        email: '',
-        accessToken: result.accessToken,
-        premium: true,
-        avatar: `https://mc-heads.net/avatar/${result.uuid}/32`,
-      };
-      localStorage.setItem('z_ms',JSON.stringify(MS));
-      updateUserChip();closeOv('ov-mslogin');renderPlay();renderAccountSection();return;
-    }
-    const errMsg=(result&&result.error)?result.error:'Connexion échouée ou annulée.';
-    body.innerHTML=`<div class="empty"><p style="color:var(--red);margin-bottom:12px">${errMsg}</p><button class="btn btn-ghost btn-sm" style="margin:0 auto" onclick="openMSLogin()">Réessayer</button></div>`;
+function renderAccountsDropdown(){
+  const list=document.getElementById('acct-list'); if(!list)return;
+  if(!ACCOUNTS.length){
+    list.innerHTML='<div class="empty" style="padding:14px 14px 8px"><p style="font-size:12px">Aucun compte — ajoutez-en un</p></div>';
     return;
   }
-
-  // ── Demo simulation (aperçu navigateur uniquement) ──
-  await new Promise(r=>setTimeout(r,800));
-  body.innerHTML='<div class="ms-loading"><div class="spinner"></div><p>Vérification de la licence Minecraft…</p></div>';
-  await new Promise(r=>setTimeout(r,2000));
-  MS={name:'ZenithPlayer',email:'joueur@outlook.fr',uuid:'069a79f4-44e9-4726-a5be-fca90e38aaf5',accessToken:'demo_'+Date.now(),premium:true,avatar:'https://mc-heads.net/avatar/069a79f4-44e9-4726-a5be-fca90e38aaf5/32'};
-  localStorage.setItem('z_ms',JSON.stringify(MS));
-  updateUserChip();closeOv('ov-mslogin');renderPlay();renderAccountSection();
-}
-
-function useOfflineMode(){
-  const name=prompt("Choisissez votre pseudo Minecraft hors-ligne :","Joueur")||(MS&&MS.name)||"Joueur";
-  MS={name,email:'',uuid:'offline-'+Date.now(),accessToken:'',premium:false,avatar:''};
-  localStorage.setItem('z_ms',JSON.stringify(MS));
-  updateUserChip();closeOv('ov-mslogin');renderPlay();renderAccountSection();
-}
-
-function logoutMS(){
-  MS=null;localStorage.removeItem('z_ms');updateUserChip();closeOv('ov-mslogin');renderPlay();renderAccountSection();
+  list.innerHTML=ACCOUNTS.map((a,i)=>`
+    <div class="acct-item${a.active?' cur':''}" onclick="setActiveAccount(${i})">
+      <div class="acct-av">
+        ${a.avatar?`<img src="${a.avatar}" onerror="this.style.display='none'">`
+          :`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`}
+      </div>
+      <div class="acct-info">
+        <div class="acct-nm">${esc(a.name)}</div>
+        <div class="acct-tp">${a.premium?'✓ Premium':'Hors-ligne'}</div>
+      </div>
+      ${a.active?`<svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" style="width:14px;height:14px;flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>`:''}
+      <button onclick="removeAccount(${i},event)" class="pic-btn del" style="width:20px;height:20px;flex-shrink:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`).join('');
 }
 
 function updateUserChip(){
@@ -1630,55 +1863,133 @@ function updateUserChip(){
   const status=document.getElementById('tb-user-status');
   const avatar=document.getElementById('tb-avatar');
   if(!label)return;
+  const count=ACCOUNTS.length;
   if(MS&&MS.name){
-    label.textContent=MS.premium?'Compte Microsoft':'Hors-ligne';
-    name.textContent=MS.name;
+    label.textContent=MS.premium?'Microsoft':'Hors-ligne';
+    name.textContent=MS.name+(count>1?` +${count-1}`:'');
     status.className='tb-user-status '+(MS.premium?'premium':'offline-ms');
     status.textContent=MS.premium?'✓ Premium':'Hors-ligne';
-    if(avatar) avatar.innerHTML=MS.avatar?`<img src="${MS.avatar}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;border-radius:3px">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
-  } else {
+    if(avatar)avatar.innerHTML=MS.avatar
+      ?`<img src="${MS.avatar}" onerror="this.style.display='none'" style="width:100%;height:100%;object-fit:cover;border-radius:3px">`
+      :`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+  }else{
     label.textContent='Non connecté';
-    name.textContent='Invité';
+    name.textContent='Aucun compte';
     status.className='tb-user-status offline-ms';
-    status.textContent='Cliquer pour se connecter';
-    if(avatar) avatar.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+    status.textContent='Cliquer pour ajouter';
+    if(avatar)avatar.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
   }
+}
+
+function onUserChipClick(){toggleAcctDD(null);}
+
+function openMSLogin(){
+  document.getElementById('ms-modal-title').textContent='Connexion Microsoft';
+  document.getElementById('ms-modal-body').innerHTML=`
+    <div class="ms-login-box">
+      <div class="ms-logo" style="background:#107c10">
+        <svg viewBox="0 0 21 21" style="width:26px;height:26px"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+      </div>
+      <div class="ms-login-title">Se connecter avec Microsoft</div>
+      <div class="ms-login-sub">Connectez votre compte Microsoft pour jouer avec votre licence Minecraft Java Edition officielle.</div>
+      <button class="btn-ms" onclick="startMSAuth()">
+        <svg viewBox="0 0 21 21" style="width:14px;height:14px;flex-shrink:0"><rect x="1" y="1" width="9" height="9" fill="#fff"/><rect x="11" y="1" width="9" height="9" fill="#fff"/><rect x="1" y="11" width="9" height="9" fill="#fff"/><rect x="11" y="11" width="9" height="9" fill="#fff"/></svg>
+        Se connecter avec Microsoft
+      </button>
+      <div style="font-size:11px;color:var(--text2)">Ou jouer <span style="color:var(--accent);cursor:pointer;font-weight:700" onclick="openOfflineModeModal()">en mode hors-ligne</span></div>
+    </div>`;
+  openOv('ov-mslogin');
+}
+
+function openOfflineModeModal(){
+  closeOv('ov-mslogin');
+  const name=prompt("Pseudo Minecraft hors-ligne :","Joueur");
+  if(!name||!name.trim())return;
+  addAccount({name:name.trim(),email:'',uuid:'offline-'+Date.now(),accessToken:'',premium:false,avatar:''});
+}
+
+function openMSLoggedIn(){toggleAcctDD(null);}
+
+async function startMSAuth(){
+  const body=document.getElementById('ms-modal-body');
+  body.innerHTML='<div class="ms-loading"><div class="spinner"></div><p>Ouverture de la page Microsoft…</p><p style="font-size:11px;color:var(--text2);margin-top:6px">Connectez-vous dans la fen&ecirc;tre qui s&apos;ouvre.</p></div>';
+  if(window.electronAPI?.msLogin){
+    const result=await window.electronAPI.msLogin();
+    if(result&&result.success){
+      addAccount({name:result.username,uuid:result.uuid,email:'',accessToken:result.accessToken,premium:true,avatar:`https://mc-heads.net/avatar/${result.uuid}/32`});
+      closeOv('ov-mslogin');return;
+    }
+    const errMsg=(result&&result.error)?result.error:'Connexion échouée ou annulée.';
+    body.innerHTML=`<div class="empty"><p style="color:var(--red);margin-bottom:12px">${errMsg}</p><button class="btn btn-ghost btn-sm" style="margin:0 auto" onclick="openMSLogin()">Réessayer</button></div>`;
+    return;
+  }
+  // Demo simulation
+  await new Promise(r=>setTimeout(r,800));
+  body.innerHTML='<div class="ms-loading"><div class="spinner"></div><p>Vérification de la licence…</p></div>';
+  await new Promise(r=>setTimeout(r,2000));
+  addAccount({name:'MightyPlayer',email:'joueur@outlook.fr',uuid:'069a79f4-44e9-4726-a5be-fca90e38aaf5',accessToken:'demo_'+Date.now(),premium:true,avatar:'https://mc-heads.net/avatar/069a79f4-44e9-4726-a5be-fca90e38aaf5/32'});
+  closeOv('ov-mslogin');
+}
+
+function addAccount(acct){
+  // Check if already exists
+  const exists=ACCOUNTS.findIndex(a=>a.uuid===acct.uuid&&a.name===acct.name);
+  if(exists>-1){ACCOUNTS[exists]={...ACCOUNTS[exists],...acct,active:true};}
+  else{ACCOUNTS.forEach(a=>a.active=false);acct.active=true;ACCOUNTS.push(acct);}
+  MS=ACCOUNTS.find(a=>a.active)||ACCOUNTS[0]||null;
+  saveAccounts();updateUserChip();renderAccountsDropdown();renderPlay();renderAccountSection();
+}
+
+function logoutMS(){
+  // Remove current active account
+  const idx=ACCOUNTS.findIndex(a=>a.active);
+  if(idx>-1)ACCOUNTS.splice(idx,1);
+  MS=ACCOUNTS[0]||null;
+  if(MS)MS.active=true;
+  saveAccounts();updateUserChip();renderAccountsDropdown();closeOv('ov-mslogin');renderPlay();renderAccountSection();
 }
 
 function renderAccountSection(){
   const el=document.getElementById('account-section'); if(!el)return;
-  if(MS&&MS.name){
+  if(ACCOUNTS.length){
     el.innerHTML=`
-      <div class="ms-user-info">
-        <div class="ms-avatar-big">${MS.avatar?`<img src="${MS.avatar}" onerror="this.style.display='none'">`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'}</div>
-        <div>
-          <div class="ms-uname">${esc(MS.name)}</div>
-          <div class="ms-uemail">${esc(MS.email||'')}</div>
-          <div class="ms-ustatus ${MS.premium?'premium':'offline-ms'}">${MS.premium?'✓ Licence Minecraft officielle':'Mode hors-ligne'}</div>
-        </div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        ${ACCOUNTS.map((a,i)=>`
+          <div class="ms-user-info" style="${a.active?'border-color:rgba(74,222,128,.3)':''}">
+            <div class="ms-avatar-big">${a.avatar?`<img src="${a.avatar}" onerror="this.style.display='none'">`:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`}</div>
+            <div style="flex:1">
+              <div class="ms-uname">${esc(a.name)}${a.active?' <span style="font-size:10px;color:var(--accent);font-weight:700">(actif)</span>':''}</div>
+              <div class="ms-ustatus ${a.premium?'premium':'offline-ms'}">${a.premium?'✓ Licence officielle':'Hors-ligne'}</div>
+            </div>
+            ${!a.active?`<button class="btn btn-ghost btn-sm" onclick="setActiveAccount(${i});loadG()" style="flex-shrink:0">Activer</button>`:''}
+            <button class="btn btn-danger btn-sm" onclick="removeAccount(${i})" style="flex-shrink:0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>`).join('')}
       </div>
-      <button class="btn btn-danger" style="width:100%;justify-content:center;margin-top:2px" onclick="logoutMS()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Se déconnecter
-      </button>`;
-  } else {
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn-ms" onclick="openMSLogin()" style="flex:1;justify-content:center">
+          <svg viewBox="0 0 21 21" style="width:13px;height:13px;flex-shrink:0"><rect x="1" y="1" width="9" height="9" fill="#fff"/><rect x="11" y="1" width="9" height="9" fill="#fff"/><rect x="1" y="11" width="9" height="9" fill="#fff"/><rect x="11" y="11" width="9" height="9" fill="#fff"/></svg>
+          + Microsoft
+        </button>
+        <button class="btn btn-ghost" onclick="openOfflineModeModal()" style="flex:1">+ Hors-ligne</button>
+      </div>`;
+  }else{
     el.innerHTML=`
       <div class="ms-login-box">
         <div class="ms-logo" style="background:#107c10"><svg viewBox="0 0 21 21" style="width:24px;height:24px"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg></div>
         <div class="ms-login-title">Connexion Microsoft</div>
-        <div class="ms-login-sub">Connectez votre compte Mojang pour jouer avec votre licence officielle Minecraft Java.</div>
+        <div class="ms-login-sub">Connectez votre compte Mojang pour jouer avec votre licence officielle.</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
-          <button class="btn-ms" onclick="openMSLogin()"><svg viewBox="0 0 21 21" style="width:14px;height:14px;flex-shrink:0"><rect x="1" y="1" width="9" height="9" fill="#fff"/><rect x="11" y="1" width="9" height="9" fill="#fff"/><rect x="1" y="11" width="9" height="9" fill="#fff"/><rect x="11" y="11" width="9" height="9" fill="#fff"/></svg>Connexion Microsoft</button>
-          <button class="btn btn-ghost" onclick="useOfflineMode()">Mode hors-ligne</button>
+          <button class="btn-ms" onclick="openMSLogin()"><svg viewBox="0 0 21 21" style="width:13px;height:13px;flex-shrink:0"><rect x="1" y="1" width="9" height="9" fill="#fff"/><rect x="11" y="1" width="9" height="9" fill="#fff"/><rect x="1" y="11" width="9" height="9" fill="#fff"/><rect x="11" y="11" width="9" height="9" fill="#fff"/></svg>Connexion Microsoft</button>
+          <button class="btn btn-ghost" onclick="openOfflineModeModal()">Hors-ligne</button>
         </div>
       </div>`;
   }
 }
 
-// ═══════════════════════════════════════════════════════
-// PROFILE PICKER FOR MOD
-// ═══════════════════════════════════════════════════════
-let pendingMod=null, pickedPid=null;
+function useOfflineMode(){openOfflineModeModal();}
+
 
 function openProfilePickForMod(mod, e){
   if(e) e.stopPropagation();
@@ -1849,5 +2160,20 @@ document.addEventListener('click', function(e) {
   </div>
 </div>
 
+
+<!-- ── ACCOUNTS DROPDOWN ── -->
+<div class="acct-dd" id="acct-dd" onclick="event.stopPropagation()">
+  <div style="padding:8px 14px 4px;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1.2px;text-transform:uppercase">Comptes</div>
+  <div id="acct-list"></div>
+  <div class="acct-sep"></div>
+  <div class="acct-btn" onclick="closeAcctDD();startMSAuth()">
+    <svg viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+    Ajouter un compte Microsoft
+  </div>
+  <div class="acct-btn" onclick="closeAcctDD();openOfflineModeModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Ajouter compte hors-ligne
+  </div>
+</div>
 </body>
 </html>
