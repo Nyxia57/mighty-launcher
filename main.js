@@ -3,6 +3,37 @@ const path = require('path')
 const https = require('https')
 const http  = require('http')
 const { URL } = require('url')
+const { autoUpdater } = require('electron-updater')
+
+// ── AUTO-UPDATER ─────────────────────────────────────────────────────
+autoUpdater.autoDownload = true          // télécharge en arrière-plan
+autoUpdater.autoInstallOnAppQuit = true  // installe quand l'app se ferme
+
+autoUpdater.on('checking-for-update', () => {
+  console.log('[Updater] Vérification des mises à jour...')
+})
+autoUpdater.on('update-available', (info) => {
+  console.log('[Updater] Mise à jour disponible :', info.version)
+  mainWindow?.webContents.send('update-available', info)
+})
+autoUpdater.on('update-not-available', () => {
+  console.log('[Updater] Aucune mise à jour.')
+})
+autoUpdater.on('download-progress', (progress) => {
+  mainWindow?.webContents.send('update-progress', progress)
+})
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('[Updater] Mise à jour téléchargée :', info.version)
+  mainWindow?.webContents.send('update-downloaded', info)
+})
+autoUpdater.on('error', (err) => {
+  console.error('[Updater] Erreur :', err.message)
+})
+
+// IPC — le renderer peut demander d'installer maintenant
+ipcMain.on('install-update', () => {
+  autoUpdater.quitAndInstall()
+})
 
 // ── OPTIMISATION RAM ─────────────────────────────────────────────────
 // Limiter la mémoire V8 du process principal
@@ -37,10 +68,10 @@ let authServer = null
 // ─── FENÊTRE PRINCIPALE ───
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1100,
-    height: 700,
-    minWidth: 900,
-    minHeight: 600,
+    width: 1440,
+    height: 900,
+    minWidth: 1280,
+    minHeight: 800,
     frame: false,
     backgroundColor: '#08070f',
     webPreferences: {
@@ -68,6 +99,8 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow()
   app.on('activate', () => { if (!mainWindow) createWindow() })
+  // Vérifier les mises à jour 3s après le démarrage
+  setTimeout(() => autoUpdater.checkForUpdatesAndNotify(), 3000)
 })
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })
 
