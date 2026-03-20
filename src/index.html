@@ -26,7 +26,7 @@
   --text2:#55556a;
   --font:'Nunito',sans-serif;
   --mono:'JetBrains Mono',monospace;
-  --topbar:48px;
+  --topbar:54px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);font-family:var(--font)}
@@ -51,7 +51,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
 .tb-nav{display:flex;align-items:stretch;-webkit-app-region:no-drag}
 .tb-nav-btn{
   display:flex;align-items:center;gap:8px;
-  padding:0 18px;font-size:13px;font-weight:700;
+  padding:0 20px;font-size:14px;font-weight:700;
   color:var(--text1);cursor:pointer;position:relative;
   transition:.15s;border:none;background:none;font-family:var(--font);
   -webkit-app-region:no-drag;
@@ -114,16 +114,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
 
 /* ─── SIDE ICONS ──────────────────────── */
 #side-icons{
-  width:44px;background:var(--bg1);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:6px;
+  width:52px;background:var(--bg1);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:8px;
   flex-shrink:0;
 }
 .side-btn{
-  width:32px;height:32px;border-radius:7px;border:none;
+  width:38px;height:38px;border-radius:8px;border:none;
   background:transparent;color:var(--text2);cursor:pointer;
   display:flex;align-items:center;justify-content:center;transition:.15s;
 }
-.side-btn svg{width:16px;height:16px}
+.side-btn svg{width:18px;height:18px}
 .side-btn:hover{background:var(--bg3);color:var(--text0)}
 .side-btn.active{background:var(--accent-dim);color:var(--accent)}
 
@@ -136,7 +136,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
 #play-page{position:relative}
 
 .hero{
-  height:360px;position:relative;overflow:hidden;flex-shrink:0;
+  height:440px;position:relative;overflow:hidden;flex-shrink:0;
   background:var(--bg2);
 }
 .hero-bg{
@@ -161,22 +161,22 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
   position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:16px;
 }
-.hero-title{font-size:28px;font-weight:900;letter-spacing:.5px;text-align:center}
+.hero-title{font-size:36px;font-weight:900;letter-spacing:.5px;text-align:center}
 .hero-title span{color:var(--accent)}
-.hero-sub{font-size:13px;color:var(--text1);text-align:center}
+.hero-sub{font-size:15px;color:var(--text1);text-align:center}
 
 .hero-launch-strip{
   position:absolute;bottom:0;left:0;right:0;
   background:rgba(10,10,12,.85);backdrop-filter:blur(10px);
   border-top:1px solid var(--border);
-  height:52px;display:flex;align-items:center;justify-content:center;gap:12px;
-  overflow:visible;/* allow dropdown to float above */
+  height:64px;display:flex;align-items:center;justify-content:center;gap:14px;
+  overflow:visible;
 }
 .launch-btn{
-  display:flex;align-items:center;gap:9px;
-  padding:10px 28px;border-radius:8px;border:none;
+  display:flex;align-items:center;gap:10px;
+  padding:12px 36px;border-radius:9px;border:none;
   background:var(--accent);color:#051a0a;
-  font-family:var(--font);font-size:13px;font-weight:800;
+  font-family:var(--font);font-size:15px;font-weight:800;
   cursor:pointer;transition:.15s;letter-spacing:.8px;
 }
 .launch-btn:hover{filter:brightness(1.1);box-shadow:0 4px 20px var(--accent-glow);transform:translateY(-1px)}
@@ -307,7 +307,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
 .mods-grid-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
 .mods-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;
 }
 
 .mod-card{
@@ -363,7 +363,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
 #profiles-page .page-inner::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 .profiles-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .profiles-hd h2{font-size:16px;font-weight:800}
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
 
 .pcard{
   background:var(--bg2);border:1px solid var(--border);border-radius:11px;
@@ -946,9 +946,14 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
       <div class="tpane" id="tp-mods-t">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:12px;color:var(--text2)">Mods installés dans ce profil</span>
-          <button class="btn btn-ghost btn-sm" onclick="openAddItemInModal('mod')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter
-          </button>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="openAddItemInModal('mod')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Manuel
+            </button>
+            <button class="btn btn-green btn-sm" onclick="goToModsFromProfile('mod')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Parcourir Modrinth
+            </button>
+          </div>
         </div>
         <div id="pm-mods-list" class="item-list"></div>
       </div>
@@ -956,9 +961,14 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
       <div class="tpane" id="tp-rp-t">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:12px;color:var(--text2)">Resource Packs</span>
-          <button class="btn btn-ghost btn-sm" onclick="openAddItemInModal('rp')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter
-          </button>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="openAddItemInModal('rp')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Manuel
+            </button>
+            <button class="btn btn-green btn-sm" onclick="goToModsFromProfile('resourcepack')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Parcourir Modrinth
+            </button>
+          </div>
         </div>
         <div id="pm-rp-list" class="item-list"></div>
       </div>
@@ -966,9 +976,14 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
       <div class="tpane" id="tp-sh-t">
         <div style="display:flex;justify-content:space-between;align-items:center">
           <span style="font-size:12px;color:var(--text2)">Shaders</span>
-          <button class="btn btn-ghost btn-sm" onclick="openAddItemInModal('shader')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Ajouter
-          </button>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="openAddItemInModal('shader')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Manuel
+            </button>
+            <button class="btn btn-green btn-sm" onclick="goToModsFromProfile('shader')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Parcourir Modrinth
+            </button>
+          </div>
         </div>
         <div id="pm-sh-list" class="item-list"></div>
       </div>
@@ -1107,6 +1122,11 @@ function navPage(id, el) {
   if(id==='mods') { if(!document.querySelector('#mods-grid .mod-card')) searchModrinth(); }
   if(id==='profiles') renderProfiles();
   if(id==='settings') loadG();
+  // Masquer le bandeau si on quitte la page mods sans passer par returnToProfileEdit
+  if(id !== 'mods') {
+    const banner = document.getElementById('profile-edit-banner');
+    if(banner) banner.style.display = 'none';
+  }
 }
 
 // ─── PLAY ──────────────────────────────────────
@@ -1784,6 +1804,103 @@ function toggleTmp(type,idx){
 }
 function removeTmp(type,idx,e){if(e)e.stopPropagation();const arr=type==='mod'?tmpMods:type==='rp'?tmpRP:tmpShaders;arr.splice(idx,1);renderTmpList(type==='mod'?'pm-mods-list':type==='rp'?'pm-rp-list':'pm-sh-list',arr,type);}
 
+function goToModsFromProfile(facet) {
+  // Sauvegarder l'état du profil en cours pour y revenir
+  pendingProfileEdit = {
+    editId,
+    name: document.getElementById('pm-name').value,
+    version: document.getElementById('pm-ver').value,
+    loader: document.getElementById('pm-loader').value,
+    lver: document.getElementById('pm-lver').value,
+    banner: tmpBanner,
+    mods: JSON.parse(JSON.stringify(tmpMods)),
+    rp: JSON.parse(JSON.stringify(tmpRP)),
+    shaders: JSON.parse(JSON.stringify(tmpShaders)),
+    ramMin: document.getElementById('pm-rmin').value,
+    ramMax: document.getElementById('pm-rmax').value,
+    jvmArgs: document.getElementById('pm-jvm').value,
+    gameDir: document.getElementById('pm-gamedir').value,
+  };
+
+  // Fermer le modal profil
+  closeOv('ov-profile');
+
+  // Aller sur la page Mods avec le bon filtre
+  modrinthFacet = facet;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  const facetMap = { mod: 0, resourcepack: 1, shader: 2 };
+  const tabs = document.querySelectorAll('.ftab');
+  if (tabs[facetMap[facet]]) tabs[facetMap[facet]].classList.add('active');
+
+  navPage('mods', document.querySelector('[data-page="mods"]'));
+  searchModrinth();
+
+  // Afficher un bandeau rappelant qu'on est en train d'éditer un profil
+  showProfileEditBanner();
+}
+
+let pendingProfileEdit = null;
+
+function showProfileEditBanner() {
+  let banner = document.getElementById('profile-edit-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'profile-edit-banner';
+    banner.style.cssText = `
+      position:fixed;bottom:0;left:0;right:0;z-index:800;
+      background:var(--accent);color:#051a0a;
+      padding:10px 20px;display:flex;align-items:center;justify-content:space-between;
+      font-size:13px;font-weight:700;box-shadow:0 -4px 20px rgba(74,222,128,.3);
+    `;
+    document.body.appendChild(banner);
+  }
+  const profileName = pendingProfileEdit?.name || 'profil';
+  banner.innerHTML = `
+    <span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;display:inline;margin-right:6px"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+      Tu es en train d'ajouter des mods au profil <strong>"${esc(profileName)}"</strong> — clique sur + pour les ajouter
+    </span>
+    <button onclick="returnToProfileEdit()" style="
+      background:#051a0a;color:var(--accent);border:none;padding:6px 14px;
+      border-radius:6px;font-weight:800;font-size:12px;cursor:pointer;font-family:var(--font)
+    ">← Retour au profil</button>
+  `;
+  banner.style.display = 'flex';
+}
+
+function returnToProfileEdit() {
+  const banner = document.getElementById('profile-edit-banner');
+  if (banner) banner.style.display = 'none';
+  if (!pendingProfileEdit) return;
+
+  // Restaurer l'état du profil
+  editId = pendingProfileEdit.editId;
+  tmpMods = pendingProfileEdit.mods;
+  tmpRP = pendingProfileEdit.rp;
+  tmpShaders = pendingProfileEdit.shaders;
+  tmpBanner = pendingProfileEdit.banner;
+
+  document.getElementById('pm-title').textContent = editId ? 'Modifier le profil' : 'Créer un profil';
+  document.getElementById('pm-name').value = pendingProfileEdit.name || '';
+  document.getElementById('pm-loader').value = pendingProfileEdit.loader || 'fabric';
+  document.getElementById('pm-lver').value = pendingProfileEdit.lver || '';
+  document.getElementById('pm-rmin').value = pendingProfileEdit.ramMin || '';
+  document.getElementById('pm-rmax').value = pendingProfileEdit.ramMax || '';
+  document.getElementById('pm-jvm').value = pendingProfileEdit.jvmArgs || '';
+  document.getElementById('pm-gamedir').value = pendingProfileEdit.gameDir || '';
+  document.getElementById('pm-ver').value = pendingProfileEdit.version || '';
+  document.getElementById('pm-ver-search').value = pendingProfileEdit.version || '';
+
+  document.querySelectorAll('.bsw').forEach(b =>
+    b.style.border = b.dataset.c === tmpBanner ? '2px solid #fff' : '2px solid transparent'
+  );
+
+  mTab('mods-t', document.querySelectorAll('.mtab')[1]);
+  renderTmpLists();
+  openOv('ov-profile');
+  navPage('profiles', document.querySelector('[data-page="profiles"]'));
+}
+
 function openAddItemInModal(type){
   itemCtx='modal';itemType=type;
   const labels={mod:'Ajouter un mod',rp:'Ajouter un Resource Pack',shader:'Ajouter un Shader'};
@@ -1979,8 +2096,46 @@ function ensureJSZip(){
   });
 }
 
-// ─── INIT ──────────────────────────────────────
-// MS declared here so it's available for init block AND all functions below
+// ── AUTO-UPDATER UI ──────────────────────────────────────────────────
+if (window.electronAPI) {
+  window.electronAPI.onUpdateAvailable(info => {
+    showUpdateBanner(`Mise à jour ${info.version} disponible — téléchargement en cours...`, false)
+  })
+  window.electronAPI.onUpdateProgress(progress => {
+    const pct = Math.round(progress.percent || 0)
+    showUpdateBanner(`Téléchargement de la mise à jour... ${pct}%`, false)
+  })
+  window.electronAPI.onUpdateDownloaded(info => {
+    showUpdateBanner(`Mise à jour ${info.version} prête — redémarrer pour installer`, true)
+  })
+}
+
+function showUpdateBanner(msg, showInstall) {
+  let banner = document.getElementById('update-banner')
+  if (!banner) {
+    banner = document.createElement('div')
+    banner.id = 'update-banner'
+    banner.style.cssText = `
+      position:fixed;top:var(--topbar);left:0;right:0;z-index:1000;
+      background:#1a3a2a;border-bottom:1px solid rgba(74,222,128,.3);
+      padding:8px 18px;display:flex;align-items:center;justify-content:space-between;
+      font-size:12px;color:var(--accent);font-weight:600;
+      animation:slideDown .3s ease;
+    `
+    document.body.appendChild(banner)
+  }
+  banner.innerHTML = `
+    <span style="display:flex;align-items:center;gap:8px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      ${msg}
+    </span>
+    ${showInstall ? `<button onclick="window.electronAPI.installUpdate()" style="
+      background:var(--accent);color:#051a0a;border:none;padding:5px 14px;
+      border-radius:5px;font-weight:800;font-size:11px;cursor:pointer;font-family:var(--font)
+    ">Redémarrer & Installer</button>` : ''}
+  `
+  banner.style.display = 'flex'
+}
 // ── MULTI-ACCOUNT STATE ──────────────────────────────
 // ACCOUNTS: array of all saved accounts
 // MS: currently active account (shorthand)

@@ -11,4 +11,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onGameExit:   (cb) => ipcRenderer.on('game-exit', (_, data) => cb(data)),
   getMCVersions: () => ipcRenderer.invoke('get-mc-versions'),
   openLog:      () => ipcRenderer.send('open-log'),
+  // Auto-updater
+  onUpdateAvailable:  (cb) => ipcRenderer.on('update-available',  (_, data) => cb(data)),
+  onUpdateProgress:   (cb) => ipcRenderer.on('update-progress',   (_, data) => cb(data)),
+  onUpdateDownloaded: (cb) => ipcRenderer.on('update-downloaded', (_, data) => cb(data)),
+  installUpdate:      () => ipcRenderer.send('install-update'),
 });

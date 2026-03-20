@@ -1,12 +1,13 @@
 {
   "name": "mighty-launcher",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Mighty Launcher — Minecraft Launcher with Modrinth API & Microsoft Auth",
+  "author": "Mighty",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder --win",
-    "build:win": "electron-builder --win",
+    "build": "set CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder --win",
+    "build:win": "set CSC_IDENTITY_AUTO_DISCOVERY=false && electron-builder --win",
     "build:linux": "electron-builder --linux",
     "build:mac": "electron-builder --mac"
   },
@@ -18,34 +19,36 @@
       "main.js",
       "package.json"
     ],
+    "publish": {
+      "provider": "github",
+      "owner": "Nyxia57",
+      "repo": "mighty-launcher"
+    },
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
       ],
-      "icon": "assets/icon.ico"
+      "forceCodeSigning": false
     },
     "linux": {
-      "target": "AppImage",
-      "icon": "assets/icon.png"
+      "target": "AppImage"
     },
     "mac": {
-      "target": "dmg",
-      "icon": "assets/icon.icns"
+      "target": "dmg"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "assets/icon.ico",
-      "installerHeaderIcon": "assets/icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Mighty"
     }
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
   },
   "devDependencies": {
     "electron": "^41.0.3",
