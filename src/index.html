@@ -560,6 +560,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
 
 /* ── HERO IMAGE FADE ──────────────────────────────── */
 .hero-img{position:absolute;inset:0;background-size:cover;background-position:center top;
+  background:linear-gradient(160deg,#071a09 0%,#0e3316 40%,#071a0e 100%);
   transition:opacity .5s ease}
 .hero-img.fading{opacity:0}
 .hero-overlay{position:absolute;inset:0;
@@ -823,9 +824,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
     <div class="profiles-hd">
       <h2>Mes profils</h2>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="importProfiles()" title="Importer (.json)">
+        <button class="btn btn-ghost btn-sm" onclick="importProfiles()" title="Importer (.json ou .mrpack)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Importer
+          Importer (.json / .mrpack)
         </button>
         <button class="btn btn-ghost btn-sm" onclick="exportProfiles()" title="Exporter (.json)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -910,16 +911,25 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
             </div>
           </div>
         </div>
-        <div class="form-row">
-          <div class="sg"><label class="sl">Version Minecraft *</label>
-            <select class="ssel" id="pm-ver">
-              <option value="">Chargement des versions…</option>
-            </select>
+        <div class="form-row" style="overflow:visible">
+          <div class="sg" style="position:relative;z-index:1000">
+            <label class="sl">Version Minecraft *</label>
+            <input class="si" id="pm-ver-search" placeholder="ex: 1.21.11" autocomplete="off"
+              oninput="filterVerDropdown()" onfocus="openVerDropdown()" onblur="setTimeout(closeVerDropdown,200)"
+              style="cursor:pointer"/>
+            <input type="hidden" id="pm-ver" value=""/>
+            <div id="ver-dropdown" style="
+              display:none;position:fixed;z-index:99999;
+              width:260px;
+              background:var(--bg1);border:1px solid var(--accent);border-radius:10px;
+              max-height:280px;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.8);margin-top:3px">
+              <div id="ver-dropdown-list"></div>
+            </div>
           </div>
           <div class="sg"><label class="sl">Type</label>
-            <select class="ssel" id="pm-ver-type" onchange="filterVersions()">
-              <option value="release">Releases uniquement</option>
+            <select class="ssel" id="pm-ver-type" onchange="filterVerDropdown()">
               <option value="all">Toutes (snapshots incluses)</option>
+              <option value="release">Releases uniquement</option>
             </select>
           </div>
           <div class="sg"><label class="sl">Loader</label>
@@ -970,7 +980,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
           <div class="sg"><label class="sl">RAM max (Mo)</label><input class="si" type="number" id="pm-rmax" placeholder="Utilise global" min="512" step="256"/></div>
         </div>
         <div class="sg"><label class="sl">Arguments JVM</label><input class="si" id="pm-jvm" placeholder="-XX:+UseG1GC -XX:MaxGCPauseMillis=50"/></div>
-        <div class="sg"><label class="sl">Dossier .minecraft</label><input class="si" id="pm-gamedir" placeholder="%appdata%\.minecraft (défaut)"/></div>
+        <div class="sg"><label class="sl">Dossier de jeu</label><input class="si" id="pm-gamedir" placeholder="AppData/Roaming/Mighty (défaut)"/></div>
       </div>
     </div>
     <div class="mft">
@@ -1036,6 +1046,29 @@ html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);f
 </div>
 
 <script>
+// ─── VERSION NAMES (déclaré en premier pour éviter les erreurs d'init) ───
+const VERSION_NAMES={
+  '1.21.11':'The Garden Awakens','1.21.4':'Pale Garden','1.21.3':'Pale Garden','1.21.2':'Pale Garden','1.21.1':'Tricky Trials','1.21':'Tricky Trials',
+  '1.20.6':'Trails & Tales','1.20.5':'Trails & Tales','1.20.4':'Trails & Tales','1.20.3':'Trails & Tales',
+  '1.20.2':'Trails & Tales','1.20.1':'Trails & Tales','1.20':'Trails & Tales',
+  '1.19.4':'The Wild Update','1.19.3':'The Wild Update','1.19.2':'The Wild Update','1.19.1':'The Wild Update','1.19':'The Wild Update',
+  '1.18.2':'Caves & Cliffs Pt.2','1.18.1':'Caves & Cliffs Pt.2','1.18':'Caves & Cliffs Pt.2',
+  '1.17.1':'Caves & Cliffs Pt.1','1.17':'Caves & Cliffs Pt.1',
+  '1.16.5':'Nether Update','1.16.4':'Nether Update','1.16.3':'Nether Update','1.16.2':'Nether Update','1.16.1':'Nether Update','1.16':'Nether Update',
+  '1.15.2':'Buzzy Bees','1.15.1':'Buzzy Bees','1.15':'Buzzy Bees',
+  '1.14.4':'Village & Pillage','1.14.3':'Village & Pillage','1.14.2':'Village & Pillage','1.14.1':'Village & Pillage','1.14':'Village & Pillage',
+  '1.13.2':'Update Aquatic','1.13.1':'Update Aquatic','1.13':'Update Aquatic',
+  '1.12.2':'World of Color','1.12.1':'World of Color','1.12':'World of Color',
+  '1.11.2':'Exploration Update','1.11':'Exploration Update','1.10.2':'Frostburn Update','1.10':'Frostburn Update',
+  '1.9.4':'Combat Update','1.9.2':'Combat Update','1.9':'Combat Update',
+  '1.8.9':'Bountiful Update','1.8.8':'Bountiful Update','1.8.4':'Bountiful Update','1.8':'Bountiful Update',
+  '1.7.10':'Changed the World','1.7.9':'Changed the World','1.7.2':'Changed the World',
+  '1.6.4':'Horse Update','1.6.2':'Horse Update','1.6.1':'Horse Update',
+  '1.5.2':'Redstone Update','1.5.1':'Redstone Update',
+  '1.4.7':'Pretty Scary Update','1.4.5':'Pretty Scary Update',
+  '1.3.2':'Easy Update','1.2.5':'Moar Stacked','1.1':'Adventure','1.0':'Release',
+};
+
 // ─── STATE ──────────────────────────────────────
 let P = JSON.parse(localStorage.getItem('z_p')||'[]');
 let G = JSON.parse(localStorage.getItem('z_g')||'{"user":"Joueur","rmin":512,"rmax":2048,"java":"","closeOnLaunch":true,"verify":true}');
@@ -1094,13 +1127,13 @@ function renderPlay() {
     const vbadge=document.getElementById('hero-ver-badge');
     if(vbadge){vbadge.textContent=`Minecraft ${active.version}${VERSION_NAMES[active.version]?' — '+VERSION_NAMES[active.version]:''}`;vbadge.style.display='block';}
   }else{
-    heroSub.textContent='Aucun profil sélectionné';
+    heroSub.textContent='Aucun profil sélectionné — créez un profil pour commencer';
     launchLabel.textContent='FABRIC';
     profileLabel.textContent='Changer de profil';
     const vbadge=document.getElementById('hero-ver-badge');
     if(vbadge) vbadge.style.display='none';
-    const hi=document.getElementById('hero-img');
-    if(hi){hi.style.backgroundImage='';hi.style.background='linear-gradient(135deg,#0a1a10 0%,#0d1a26 50%,#150d1a 100%)';}
+    // Appliquer quand même un fond coloré
+    applyHeroBg('1.21');
   }
 
   renderFriends();
@@ -1155,56 +1188,63 @@ function doLaunch(){
   const txt=document.getElementById('stext');
   const bar=document.getElementById('sprogbar');
   const prog=document.getElementById('sprog');
-  const steps=[
-    {t:'Vérification des fichiers...',p:15},
-    {t:`Chargement Minecraft ${active.version}...`,p:35},
-    {t:active.loader!=='vanilla'?`Initialisation ${cap(active.loader)}...`:'Préparation Vanilla...',p:55},
-    {t:(active.mods||[]).filter(m=>m.enabled!==false).length>0?`Chargement de ${(active.mods||[]).filter(m=>m.enabled!==false).length} mod(s)...`:'Finalisation...',p:80},
-    {t:'Lancement en cours...',p:100},
-  ];
-  dot.className='sdot load'; prog.style.display='block'; bar.style.width='0%';
-  let i=0;
-  const next=()=>{
-    if(i>=steps.length){
+
+  dot.className='sdot load';
+  prog.style.display='block';
+  bar.style.width='5%';
+  txt.textContent='Préparation du lancement…';
+
+  if(!window.electronAPI?.launch){
+    // Browser preview — simulate
+    let p=5;
+    const sim=setInterval(()=>{
+      p=Math.min(p+Math.random()*8,95);
+      bar.style.width=p+'%';
+      if(p>90){clearInterval(sim);dot.className='sdot run';txt.textContent='Minecraft lancé (simulation)';prog.style.display='none';}
+    },300);
+    return;
+  }
+
+  // Listen for real-time progress from main process (Java download etc.)
+  window.electronAPI.onProgress(data=>{
+    txt.textContent=data.msg||'…';
+    if(data.pct!=null){bar.style.width=data.pct+'%';}
+  });
+
+  // When MC closes normally, reset status to "Prêt"
+  window.electronAPI.onGameExit&&window.electronAPI.onGameExit(()=>{
+    dot.className='sdot';
+    prog.style.display='none';
+    bar.style.width='0%';
+    txt.textContent='Prêt';
+  });
+
+  window.electronAPI.launch(active,{
+    username:(MS&&MS.name)||'Joueur',
+    accessToken:(MS&&MS.accessToken)||'0',
+    uuid:(MS&&MS.uuid)||'00000000-0000-0000-0000-000000000000',
+    premium:!!(MS&&MS.premium),
+    ramMin:active.ramMin||G.rmin||512,
+    ramMax:active.ramMax||G.rmax||2048,
+    jvmArgs:active.jvmArgs||'',
+    javaPath:G.java||''
+  }).then(res=>{
+    if(res&&res.success){
       dot.className='sdot run';
-      txt.textContent=`Minecraft ${active.version} en cours d'exécution`;
+      bar.style.width='100%';
+      txt.textContent=`Minecraft ${active.version} lancé !`;
+      setTimeout(()=>{prog.style.display='none';},1500);
+    } else {
+      dot.className='sdot err';
       prog.style.display='none';
-      if(window.electronAPI?.launch){
-        window.electronAPI.launch(active,{
-          username:(MS&&MS.name)||'Joueur',
-          accessToken:(MS&&MS.accessToken)||'0',
-          uuid:(MS&&MS.uuid)||'00000000-0000-0000-0000-000000000000',
-          premium:!!(MS&&MS.premium),
-          ramMin:active.ramMin||G.rmin||512,
-          ramMax:active.ramMax||G.rmax||2048,
-          jvmArgs:active.jvmArgs||'',
-          javaPath:G.java||''
-        }).then(res=>{
-          if(res&&!res.success){
-            dot.className='sdot err';
-            // Show first line of error, truncated
-            const firstLine=(res.error||'Erreur inconnue').split('\n')[0].substring(0,120);
-            txt.innerHTML=`❌ ${firstLine} <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="window.electronAPI?.openLog&&window.electronAPI.openLog()">Voir log</span>`;
-            prog.style.display='none';
-          } else if(res&&res.success){
-            // Game started successfully — wait a moment then reset status
-            setTimeout(()=>{
-              dot.className='sdot run';
-              txt.textContent=`Minecraft ${active.version} lancé`;
-            },500);
-          }
-        }).catch(e=>{
-          dot.className='sdot err';
-          txt.textContent='❌ Erreur de communication avec le launcher';
-        });
-      }
-      return;
+      const firstLine=((res&&res.error)||'Erreur inconnue').split('\n')[0].substring(0,120);
+      txt.innerHTML=`Erreur : ${firstLine} <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="window.electronAPI?.openLog&&window.electronAPI.openLog()">Voir log</span>`;
     }
-    txt.textContent=steps[i].t; bar.style.width=steps[i].p+'%'; i++;
-    setTimeout(next,500+Math.random()*400);
-  };
-  txt.textContent='Initialisation...';
-  setTimeout(next,200);
+  }).catch(e=>{
+    dot.className='sdot err';
+    prog.style.display='none';
+    txt.textContent='Erreur de communication avec le launcher';
+  });
 }
 
 // ─── MODRINTH API ──────────────────────────────────────
@@ -1392,107 +1432,251 @@ function pCardHTML(p){
 // ═══════════════════════════════════════════════════════
 // MINECRAFT VERSION LOADER (Mojang API)
 // ═══════════════════════════════════════════════════════
-let MC_VERSIONS = []; // cached version list
 
-async function loadMCVersions() {
-  const sel = document.getElementById('pm-ver');
-  if (!sel) return;
-
-  // Use cached if available
-  if (MC_VERSIONS.length > 0) { populateVersionSelect(sel); return; }
-
-  try {
-    const res = await fetch('https://launchermeta.mojang.com/mc/game/version_manifest_v2.json');
-    const data = await res.json();
-    MC_VERSIONS = data.versions || [];
-    populateVersionSelect(sel);
-  } catch (e) {
-    // Fallback to hardcoded list if no internet
-    MC_VERSIONS = FALLBACK_VERSIONS.map(v => ({ id: v.id, type: v.type }));
-    populateVersionSelect(sel);
-  }
-}
-
-function filterVersions() {
-  const sel = document.getElementById('pm-ver');
-  const cur = sel?.value;
-  if (sel) populateVersionSelect(sel, cur);
-}
-
-function populateVersionSelect(sel, keepValue) {
-  const typeFilter = document.getElementById('pm-ver-type')?.value || 'release';
-  const filtered = typeFilter === 'all'
-    ? MC_VERSIONS
-    : MC_VERSIONS.filter(v => v.type === 'release');
-
-  const prev = keepValue || sel.value;
-
-  // Group by major version for releases
-  sel.innerHTML = '';
-  let curGroup = null;
-
-  for (const v of filtered) {
-    if (v.type === 'release') {
-      const major = v.id.split('.').slice(0, 2).join('.');
-      const grpLabel = major + (VERSION_NAMES[v.id] ? ` — ${VERSION_NAMES[v.id]}` : '');
-      if (major !== curGroup) {
-        curGroup = major;
-        const grp = document.createElement('optgroup');
-        grp.label = grpLabel;
-        sel.appendChild(grp);
-      }
-      const opt = document.createElement('option');
-      opt.value = v.id; opt.textContent = v.id;
-      sel.lastChild.appendChild(opt);
-    } else {
-      // Snapshots/betas go in a flat optgroup at the top
-      if (!sel.querySelector('optgroup[label="Snapshots & Pre-releases"]')) {
-        const grp = document.createElement('optgroup');
-        grp.label = 'Snapshots & Pre-releases';
-        sel.insertBefore(grp, sel.firstChild);
-      }
-      const opt = document.createElement('option');
-      opt.value = v.id; opt.textContent = `${v.id} (${v.type})`;
-      sel.querySelector('optgroup[label="Snapshots & Pre-releases"]').appendChild(opt);
-    }
-  }
-
-  // Restore previous selection if possible
-  if (prev && [...sel.options].some(o => o.value === prev)) {
-    sel.value = prev;
-  } else if (sel.options.length > 0) {
-    // Default to first release
-    const firstRelease = [...sel.options].find(o => o.value && !o.value.includes('snapshot'));
-    sel.value = firstRelease?.value || sel.options[0]?.value || '1.21.4';
-  }
-}
-
-// Fallback version list (used when offline)
+// ── FALLBACK first so it's always available ──────────────
 const FALLBACK_VERSIONS = [
-  {id:'1.21.4',type:'release'},{id:'1.21.3',type:'release'},{id:'1.21.1',type:'release'},{id:'1.21',type:'release'},
-  {id:'1.20.6',type:'release'},{id:'1.20.5',type:'release'},{id:'1.20.4',type:'release'},{id:'1.20.3',type:'release'},{id:'1.20.2',type:'release'},{id:'1.20.1',type:'release'},{id:'1.20',type:'release'},
-  {id:'1.19.4',type:'release'},{id:'1.19.3',type:'release'},{id:'1.19.2',type:'release'},{id:'1.19.1',type:'release'},{id:'1.19',type:'release'},
+  // ── Releases ──
+  {id:'1.21.11',type:'release'},{id:'1.21.4',type:'release'},{id:'1.21.3',type:'release'},
+  {id:'1.21.2',type:'release'},{id:'1.21.1',type:'release'},{id:'1.21',type:'release'},
+  {id:'1.20.6',type:'release'},{id:'1.20.5',type:'release'},{id:'1.20.4',type:'release'},
+  {id:'1.20.3',type:'release'},{id:'1.20.2',type:'release'},{id:'1.20.1',type:'release'},{id:'1.20',type:'release'},
+  {id:'1.19.4',type:'release'},{id:'1.19.3',type:'release'},{id:'1.19.2',type:'release'},
+  {id:'1.19.1',type:'release'},{id:'1.19',type:'release'},
   {id:'1.18.2',type:'release'},{id:'1.18.1',type:'release'},{id:'1.18',type:'release'},
   {id:'1.17.1',type:'release'},{id:'1.17',type:'release'},
-  {id:'1.16.5',type:'release'},{id:'1.16.4',type:'release'},{id:'1.16.3',type:'release'},{id:'1.16.2',type:'release'},{id:'1.16.1',type:'release'},{id:'1.16',type:'release'},
+  {id:'1.16.5',type:'release'},{id:'1.16.4',type:'release'},{id:'1.16.3',type:'release'},
+  {id:'1.16.2',type:'release'},{id:'1.16.1',type:'release'},{id:'1.16',type:'release'},
   {id:'1.15.2',type:'release'},{id:'1.15.1',type:'release'},{id:'1.15',type:'release'},
-  {id:'1.14.4',type:'release'},{id:'1.14.3',type:'release'},{id:'1.14.2',type:'release'},{id:'1.14.1',type:'release'},{id:'1.14',type:'release'},
+  {id:'1.14.4',type:'release'},{id:'1.14.3',type:'release'},{id:'1.14.2',type:'release'},
+  {id:'1.14.1',type:'release'},{id:'1.14',type:'release'},
   {id:'1.13.2',type:'release'},{id:'1.13.1',type:'release'},{id:'1.13',type:'release'},
   {id:'1.12.2',type:'release'},{id:'1.12.1',type:'release'},{id:'1.12',type:'release'},
   {id:'1.11.2',type:'release'},{id:'1.11',type:'release'},
   {id:'1.10.2',type:'release'},{id:'1.10',type:'release'},
   {id:'1.9.4',type:'release'},{id:'1.9.2',type:'release'},{id:'1.9',type:'release'},
-  {id:'1.8.9',type:'release'},{id:'1.8.8',type:'release'},{id:'1.8.7',type:'release'},{id:'1.8.4',type:'release'},{id:'1.8.3',type:'release'},{id:'1.8.1',type:'release'},{id:'1.8',type:'release'},
-  {id:'1.7.10',type:'release'},{id:'1.7.9',type:'release'},{id:'1.7.5',type:'release'},{id:'1.7.4',type:'release'},{id:'1.7.2',type:'release'},
+  {id:'1.8.9',type:'release'},{id:'1.8.8',type:'release'},{id:'1.8.7',type:'release'},
+  {id:'1.8.4',type:'release'},{id:'1.8.3',type:'release'},{id:'1.8.1',type:'release'},{id:'1.8',type:'release'},
+  {id:'1.7.10',type:'release'},{id:'1.7.9',type:'release'},{id:'1.7.5',type:'release'},
+  {id:'1.7.4',type:'release'},{id:'1.7.2',type:'release'},
   {id:'1.6.4',type:'release'},{id:'1.6.2',type:'release'},{id:'1.6.1',type:'release'},
   {id:'1.5.2',type:'release'},{id:'1.5.1',type:'release'},
   {id:'1.4.7',type:'release'},{id:'1.4.6',type:'release'},{id:'1.4.5',type:'release'},{id:'1.4.2',type:'release'},
   {id:'1.3.2',type:'release'},{id:'1.3.1',type:'release'},
-  {id:'1.2.5',type:'release'},{id:'1.2.4',type:'release'},{id:'1.2.3',type:'release'},{id:'1.2.2',type:'release'},{id:'1.2.1',type:'release'},
+  {id:'1.2.5',type:'release'},{id:'1.2.4',type:'release'},{id:'1.2.3',type:'release'},{id:'1.2.1',type:'release'},
   {id:'1.1',type:'release'},{id:'1.0',type:'release'},
-  {id:'b1.8.1',type:'old_beta'},{id:'b1.7.3',type:'old_beta'},{id:'b1.6.6',type:'old_beta'},
-  {id:'a1.2.6',type:'old_alpha'},{id:'a1.1.2_01',type:'old_alpha'},
+  // ── Snapshots 1.21.x ──
+  {id:'25w21a',type:'snapshot'},{id:'25w20a',type:'snapshot'},{id:'25w19a',type:'snapshot'},
+  {id:'25w18a',type:'snapshot'},{id:'25w17a',type:'snapshot'},{id:'25w16a',type:'snapshot'},
+  {id:'25w15a',type:'snapshot'},{id:'25w14a',type:'snapshot'},{id:'25w13a',type:'snapshot'},
+  {id:'25w12a',type:'snapshot'},{id:'25w11a',type:'snapshot'},{id:'25w10a',type:'snapshot'},
+  {id:'25w09a',type:'snapshot'},{id:'25w08a',type:'snapshot'},{id:'25w07a',type:'snapshot'},
+  {id:'25w06a',type:'snapshot'},{id:'25w05a',type:'snapshot'},{id:'25w04a',type:'snapshot'},
+  {id:'25w03a',type:'snapshot'},{id:'25w02a',type:'snapshot'},
+  {id:'24w46a',type:'snapshot'},{id:'24w45a',type:'snapshot'},{id:'24w44a',type:'snapshot'},
+  {id:'24w40a',type:'snapshot'},{id:'24w39a',type:'snapshot'},{id:'24w38a',type:'snapshot'},
+  {id:'24w37a',type:'snapshot'},{id:'24w36a',type:'snapshot'},{id:'24w35a',type:'snapshot'},
+  {id:'24w34a',type:'snapshot'},{id:'24w33a',type:'snapshot'},
+  // ── Snapshots 1.20.x ──
+  {id:'23w51b',type:'snapshot'},{id:'23w51a',type:'snapshot'},{id:'23w46a',type:'snapshot'},
+  {id:'23w45a',type:'snapshot'},{id:'23w44a',type:'snapshot'},{id:'23w43b',type:'snapshot'},
+  {id:'23w42a',type:'snapshot'},{id:'23w41a',type:'snapshot'},{id:'23w40a',type:'snapshot'},
+  {id:'23w35a',type:'snapshot'},{id:'23w32a',type:'snapshot'},{id:'23w31a',type:'snapshot'},
+  {id:'23w18a',type:'snapshot'},{id:'23w17a',type:'snapshot'},{id:'23w16a',type:'snapshot'},
+  {id:'23w14a',type:'snapshot'},{id:'23w13a_or_b',type:'snapshot'},{id:'23w12a',type:'snapshot'},
+  // ── Snapshots 1.19.x ──
+  {id:'22w45a',type:'snapshot'},{id:'22w44a',type:'snapshot'},{id:'22w43a',type:'snapshot'},
+  {id:'22w42a',type:'snapshot'},{id:'22w24a',type:'snapshot'},{id:'22w19a',type:'snapshot'},
+  {id:'22w18a',type:'snapshot'},{id:'22w17a',type:'snapshot'},{id:'22w16b',type:'snapshot'},
+  {id:'22w15a',type:'snapshot'},{id:'22w14a',type:'snapshot'},{id:'22w13a',type:'snapshot'},
+  {id:'22w12a',type:'snapshot'},{id:'22w11a',type:'snapshot'},
+  // ── Snapshots 1.18.x ──
+  {id:'21w44a',type:'snapshot'},{id:'21w43a',type:'snapshot'},{id:'21w42a',type:'snapshot'},
+  {id:'21w41a',type:'snapshot'},{id:'21w40a',type:'snapshot'},{id:'21w39a',type:'snapshot'},
+  {id:'21w38a',type:'snapshot'},{id:'21w37a',type:'snapshot'},
+  {id:'1.18-pre8',type:'snapshot'},{id:'1.18-pre7',type:'snapshot'},{id:'1.18-pre6',type:'snapshot'},
+  {id:'1.18-pre5',type:'snapshot'},{id:'1.18-pre4',type:'snapshot'},{id:'1.18-pre3',type:'snapshot'},
+  {id:'1.18-pre2',type:'snapshot'},{id:'1.18-pre1',type:'snapshot'},
+  // ── Snapshots 1.17.x ──
+  {id:'21w20a',type:'snapshot'},{id:'21w19a',type:'snapshot'},{id:'21w18a',type:'snapshot'},
+  {id:'21w17a',type:'snapshot'},{id:'21w16a',type:'snapshot'},{id:'21w15a',type:'snapshot'},
+  {id:'21w14a',type:'snapshot'},{id:'21w13a',type:'snapshot'},{id:'21w11a',type:'snapshot'},
+  {id:'21w10a',type:'snapshot'},{id:'21w08b',type:'snapshot'},{id:'21w07a',type:'snapshot'},
+  {id:'21w06a',type:'snapshot'},{id:'21w05b',type:'snapshot'},{id:'21w03a',type:'snapshot'},
+  // ── Snapshots 1.16.x ──
+  {id:'20w22a',type:'snapshot'},{id:'20w21a',type:'snapshot'},{id:'20w20b',type:'snapshot'},
+  {id:'20w19a',type:'snapshot'},{id:'20w18a',type:'snapshot'},{id:'20w17a',type:'snapshot'},
+  {id:'20w16a',type:'snapshot'},{id:'20w15a',type:'snapshot'},{id:'20w14a',type:'snapshot'},
+  {id:'20w13b',type:'snapshot'},{id:'20w12a',type:'snapshot'},{id:'20w11a',type:'snapshot'},
+  {id:'20w10a',type:'snapshot'},{id:'20w09a',type:'snapshot'},{id:'20w08a',type:'snapshot'},
+  {id:'20w07a',type:'snapshot'},{id:'20w06a',type:'snapshot'},
+  // ── Snapshots 1.15.x ──
+  {id:'19w46b',type:'snapshot'},{id:'19w45b',type:'snapshot'},{id:'19w44a',type:'snapshot'},
+  {id:'19w42a',type:'snapshot'},{id:'19w41a',type:'snapshot'},{id:'19w40a',type:'snapshot'},
+  {id:'19w39a',type:'snapshot'},{id:'19w38b',type:'snapshot'},{id:'19w37a',type:'snapshot'},
+  {id:'19w36a',type:'snapshot'},{id:'19w35a',type:'snapshot'},{id:'19w34a',type:'snapshot'},
+  // ── Snapshots 1.14.x ──
+  {id:'19w14b',type:'snapshot'},{id:'19w13b',type:'snapshot'},{id:'19w12b',type:'snapshot'},
+  {id:'19w11b',type:'snapshot'},{id:'19w09a',type:'snapshot'},{id:'19w08b',type:'snapshot'},
+  {id:'19w07a',type:'snapshot'},{id:'19w06a',type:'snapshot'},{id:'19w05a',type:'snapshot'},
+  {id:'19w04b',type:'snapshot'},{id:'19w03c',type:'snapshot'},{id:'19w02a',type:'snapshot'},
+  {id:'18w50a',type:'snapshot'},{id:'18w49a',type:'snapshot'},{id:'18w48b',type:'snapshot'},
+  {id:'18w47b',type:'snapshot'},{id:'18w46a',type:'snapshot'},{id:'18w45a',type:'snapshot'},
+  {id:'18w44a',type:'snapshot'},{id:'18w43c',type:'snapshot'},
+  // ── Snapshots 1.13.x ──
+  {id:'18w22c',type:'snapshot'},{id:'18w21a',type:'snapshot'},{id:'18w20c',type:'snapshot'},
+  {id:'18w19b',type:'snapshot'},{id:'18w16a',type:'snapshot'},{id:'18w15a',type:'snapshot'},
+  {id:'18w14b',type:'snapshot'},{id:'18w11a',type:'snapshot'},{id:'18w10d',type:'snapshot'},
+  {id:'18w09a',type:'snapshot'},{id:'18w08b',type:'snapshot'},{id:'18w07c',type:'snapshot'},
+  {id:'18w06a',type:'snapshot'},{id:'18w05a',type:'snapshot'},{id:'18w03b',type:'snapshot'},
+  {id:'18w02a',type:'snapshot'},{id:'18w01a',type:'snapshot'},
+  {id:'17w50a',type:'snapshot'},{id:'17w49b',type:'snapshot'},{id:'17w48a',type:'snapshot'},
+  {id:'17w47b',type:'snapshot'},{id:'17w46a',type:'snapshot'},{id:'17w45b',type:'snapshot'},
+  {id:'17w43b',type:'snapshot'},
+  // ── Snapshots 1.12.x ──
+  {id:'17w31a',type:'snapshot'},{id:'17w18b',type:'snapshot'},{id:'17w17b',type:'snapshot'},
+  {id:'17w16b',type:'snapshot'},{id:'17w15a',type:'snapshot'},{id:'17w14a',type:'snapshot'},
+  {id:'17w13b',type:'snapshot'},{id:'17w06a',type:'snapshot'},
+  // ── Snapshots 1.9–1.11 ──
+  {id:'16w50a',type:'snapshot'},{id:'16w44a',type:'snapshot'},{id:'16w43a',type:'snapshot'},
+  {id:'16w42a',type:'snapshot'},{id:'16w41a',type:'snapshot'},{id:'16w40a',type:'snapshot'},
+  {id:'16w39c',type:'snapshot'},{id:'16w38a',type:'snapshot'},{id:'16w36a',type:'snapshot'},
+  {id:'16w35a',type:'snapshot'},{id:'16w32b',type:'snapshot'},{id:'16w20a',type:'snapshot'},
+  {id:'16w15b',type:'snapshot'},{id:'16w14a',type:'snapshot'},{id:'16w07b',type:'snapshot'},
+  {id:'16w06a',type:'snapshot'},{id:'16w05b',type:'snapshot'},{id:'16w04a',type:'snapshot'},
+  {id:'16w03a',type:'snapshot'},{id:'16w02a',type:'snapshot'},
+  {id:'15w51b',type:'snapshot'},{id:'15w50a',type:'snapshot'},{id:'15w49b',type:'snapshot'},
+  {id:'15w47c',type:'snapshot'},{id:'15w46a',type:'snapshot'},{id:'15w45a',type:'snapshot'},
+  {id:'15w44b',type:'snapshot'},{id:'15w43c',type:'snapshot'},{id:'15w42a',type:'snapshot'},
+  {id:'15w41b',type:'snapshot'},{id:'15w40b',type:'snapshot'},{id:'15w39c',type:'snapshot'},
+  {id:'15w38b',type:'snapshot'},{id:'15w37a',type:'snapshot'},{id:'15w36d',type:'snapshot'},
+  {id:'15w35e',type:'snapshot'},{id:'15w34d',type:'snapshot'},{id:'15w33c',type:'snapshot'},
+  {id:'15w32c',type:'snapshot'},{id:'15w31c',type:'snapshot'},
+  // ── Old Beta ──
+  {id:'b1.9-pre6',type:'old_beta'},{id:'b1.9-pre5',type:'old_beta'},{id:'b1.9-pre4',type:'old_beta'},
+  {id:'b1.9-pre3',type:'old_beta'},{id:'b1.9-pre2',type:'old_beta'},{id:'b1.9-pre1',type:'old_beta'},
+  {id:'b1.8.1',type:'old_beta'},{id:'b1.8',type:'old_beta'},
+  {id:'b1.7.3',type:'old_beta'},{id:'b1.7.2',type:'old_beta'},{id:'b1.7',type:'old_beta'},
+  {id:'b1.6.6',type:'old_beta'},{id:'b1.6.5',type:'old_beta'},{id:'b1.6.4',type:'old_beta'},
+  {id:'b1.6.3',type:'old_beta'},{id:'b1.6.2',type:'old_beta'},{id:'b1.6.1',type:'old_beta'},{id:'b1.6',type:'old_beta'},
+  {id:'b1.5_01',type:'old_beta'},{id:'b1.5',type:'old_beta'},
+  {id:'b1.4_01',type:'old_beta'},{id:'b1.4',type:'old_beta'},
+  {id:'b1.3_01',type:'old_beta'},{id:'b1.3b',type:'old_beta'},
+  {id:'b1.2_02',type:'old_beta'},{id:'b1.2_01',type:'old_beta'},{id:'b1.2',type:'old_beta'},
+  {id:'b1.1_02',type:'old_beta'},
+  {id:'b1.0.2',type:'old_beta'},{id:'b1.0_01',type:'old_beta'},
+  // ── Old Alpha ──
+  {id:'a1.2.6',type:'old_alpha'},{id:'a1.2.5',type:'old_alpha'},{id:'a1.2.4_01',type:'old_alpha'},
+  {id:'a1.2.3_04',type:'old_alpha'},{id:'a1.2.3_02',type:'old_alpha'},{id:'a1.2.3_01',type:'old_alpha'},
+  {id:'a1.2.2b',type:'old_alpha'},{id:'a1.2.1_01',type:'old_alpha'},{id:'a1.2.0_02',type:'old_alpha'},
+  {id:'a1.1.2_01',type:'old_alpha'},{id:'a1.1.0',type:'old_alpha'},
+  {id:'a1.0.17_04',type:'old_alpha'},{id:'a1.0.16',type:'old_alpha'},{id:'a1.0.15',type:'old_alpha'},
+  {id:'a1.0.14',type:'old_alpha'},{id:'a1.0.11',type:'old_alpha'},{id:'a1.0.4',type:'old_alpha'},
+  {id:'inf-20100618',type:'old_alpha'},{id:'c0.30_01c',type:'old_alpha'},{id:'c0.0.13a',type:'old_alpha'},
 ];
+
+let MC_VERSIONS = [];
+
+async function loadMCVersions() {
+  // Toujours afficher le fallback immédiatement
+  if (MC_VERSIONS.length === 0) MC_VERSIONS = FALLBACK_VERSIONS.slice();
+  const sel = document.getElementById('pm-ver');
+  if (sel) populateVersionSelect(sel);
+
+  // Essayer de charger les vraies versions via IPC (main process, pas de CSP)
+  if (!window.electronAPI?.getMCVersions) return; // mode navigateur — fallback suffit
+  try {
+    const result = await window.electronAPI.getMCVersions();
+    if (result?.success && Array.isArray(result.versions) && result.versions.length > 0) {
+      MC_VERSIONS = result.versions;
+      console.log('[Versions] Loaded', MC_VERSIONS.length, 'via IPC');
+      const s = document.getElementById('pm-ver');
+      if (s) populateVersionSelect(s, s.value);
+    } else {
+      console.warn('[Versions] IPC a retourné:', result);
+    }
+  } catch(e) {
+    console.warn('[Versions] IPC échoué, fallback conservé:', e.message);
+  }
+}
+
+function filterVersions() { filterVerDropdown(); }
+
+function openVerDropdown() {
+  if (MC_VERSIONS.length === 0) MC_VERSIONS = FALLBACK_VERSIONS.slice();
+  document.getElementById('pm-ver-search').value = '';
+  renderVerDropdown();
+  const dd = document.getElementById('ver-dropdown');
+  const input = document.getElementById('pm-ver-search');
+  const rect = input.getBoundingClientRect();
+  dd.style.top = (rect.bottom + 4) + 'px';
+  dd.style.left = rect.left + 'px';
+  dd.style.width = Math.max(rect.width, 260) + 'px';
+  dd.style.display = 'block';
+}
+function closeVerDropdown() {
+  const dd = document.getElementById('ver-dropdown');
+  if (dd) dd.style.display = 'none';
+  // Si rien de sélectionné, remettre la valeur actuelle
+  const hidden = document.getElementById('pm-ver');
+  const search = document.getElementById('pm-ver-search');
+  if (hidden && search && hidden.value && search.value === '') {
+    search.value = hidden.value;
+  }
+}
+function selectVersion(id) {
+  document.getElementById('pm-ver').value = id;
+  document.getElementById('pm-ver-search').value = id;
+  document.getElementById('ver-dropdown').style.display = 'none';
+}
+function filterVerDropdown() {
+  renderVerDropdown();
+  document.getElementById('ver-dropdown').style.display = 'block';
+}
+function renderVerDropdown() {
+  if (MC_VERSIONS.length === 0) MC_VERSIONS = FALLBACK_VERSIONS.slice();
+  const typeFilter = document.getElementById('pm-ver-type')?.value || 'all';
+  const q = (document.getElementById('pm-ver-search')?.value || '').toLowerCase().trim();
+  const list = document.getElementById('ver-dropdown-list');
+  if (!list) return;
+
+  const filtered = MC_VERSIONS.filter(v => {
+    if (typeFilter === 'release' && v.type !== 'release') return false;
+    if (q && !v.id.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = '<div style="padding:10px 14px;font-size:12px;color:var(--text2)">Aucun résultat</div>';
+    return;
+  }
+
+  const curVal = document.getElementById('pm-ver')?.value || '';
+  list.innerHTML = filtered.map(v => {
+    const isSel = v.id === curVal;
+    const label = v.type !== 'release' ? `${v.id} <span style="font-size:10px;color:var(--text2)">(${v.type.replace('old_','')})</span>` : v.id;
+    return `<div onclick="selectVersion('${v.id}')" style="
+      padding:7px 14px;font-size:13px;cursor:pointer;
+      background:${isSel ? 'var(--accent-dim)' : 'transparent'};
+      color:${isSel ? 'var(--accent)' : 'var(--text0)'};
+      border-left:2px solid ${isSel ? 'var(--accent)' : 'transparent'};
+      transition:.1s;font-family:var(--mono);"
+      onmouseover="this.style.background='var(--bg3)'"
+      onmouseout="this.style.background='${isSel ? 'var(--accent-dim)' : 'transparent'}'">
+      ${label}
+    </div>`;
+  }).join('');
+}
+
+function populateVersionSelect(sel, keepValue) {
+  // Compatibilité — redirige vers le nouveau système
+  if (MC_VERSIONS.length === 0) MC_VERSIONS = FALLBACK_VERSIONS.slice();
+  const search = document.getElementById('pm-ver-search');
+  const hidden = document.getElementById('pm-ver');
+  if (!hidden) return;
+  const target = keepValue || (MC_VERSIONS[0]?.id) || '1.21.11';
+  if (hidden) hidden.value = target;
+  if (search) search.value = target;
+}
 
 function openCreateProfile(){
   editId=null;tmpMods=[];tmpRP=[];tmpShaders=[];tmpBanner='linear-gradient(135deg,#0d2a3d,#1a3a1d)';
@@ -1504,7 +1688,12 @@ function openCreateProfile(){
   mTab('gen',document.querySelector('.mtab'));
   renderTmpLists();
   openOv('ov-profile');
-  // Load versions from Mojang API — sets selector to latest release by default
+  // Peupler immédiatement avec le fallback
+  if (MC_VERSIONS.length === 0) MC_VERSIONS = FALLBACK_VERSIONS.slice();
+  const firstVer = MC_VERSIONS[0]?.id || '1.21.11';
+  document.getElementById('pm-ver').value = firstVer;
+  document.getElementById('pm-ver-search').value = firstVer;
+  // Puis tenter de charger les vraies versions en arrière-plan
   loadMCVersions();
 }
 
@@ -1528,21 +1717,10 @@ function openEditProfile(id,e){
   renderTmpLists();
   openOv('ov-profile');
   // Load versions and restore the profile's current version in selector
-  loadMCVersions().then ? loadMCVersions().then(()=>{
-    const sel=document.getElementById('pm-ver');
-    if(sel&&p.version){
-      // Add the version as option if not present (e.g. snapshot)
-      if(![...sel.options].some(o=>o.value===p.version)){
-        const opt=document.createElement('option');
-        opt.value=p.version;opt.textContent=p.version;
-        sel.insertBefore(opt,sel.firstChild);
-      }
-      sel.value=p.version;
-    }
-  }) : setTimeout(()=>{
-    const sel=document.getElementById('pm-ver');
-    if(sel&&p.version){sel.value=p.version;}
-  },300);
+  if (MC_VERSIONS.length === 0) MC_VERSIONS = FALLBACK_VERSIONS.slice();
+  document.getElementById('pm-ver').value = p.version || '';
+  document.getElementById('pm-ver-search').value = p.version || '';
+  loadMCVersions();
 }
 
 function saveProfile(){
@@ -1681,29 +1859,124 @@ function exportProfiles(){
 
 function importProfiles(){
   const input=document.createElement('input');
-  input.type='file'; input.accept='.json';
+  input.type='file'; input.accept='.json,.mrpack';
   input.onchange=e=>{
     const file=e.target.files[0]; if(!file)return;
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      try{
-        const data=JSON.parse(ev.target.result);
-        const incoming=data.profiles||data; // support both formats
-        if(!Array.isArray(incoming)){alert('Format invalide');return;}
-        const count=incoming.length;
-        if(!confirm(`Importer ${count} profil(s) ? Les profils existants seront conservés.`))return;
-        // Merge — avoid duplicates by id
-        let added=0;
-        for(const p of incoming){
-          if(!P.find(x=>x.id===p.id)){P.push({...p,active:false});added++;}
-        }
-        saveP(); renderProfiles(); renderPlay();
-        alert(`${added} profil(s) importé(s) avec succès.`);
-      }catch(e){alert('Erreur lors de la lecture du fichier : '+e.message);}
-    };
-    reader.readAsText(file);
+    if(file.name.endsWith('.mrpack')){
+      importMrpack(file);
+    } else {
+      importJSON(file);
+    }
   };
   input.click();
+}
+
+function importJSON(file){
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      const incoming=data.profiles||data;
+      if(!Array.isArray(incoming)){alert('Format invalide');return;}
+      if(!confirm(`Importer ${incoming.length} profil(s) ? Les profils existants seront conservés.`))return;
+      let added=0;
+      for(const p of incoming){
+        if(!P.find(x=>x.id===p.id)){P.push({...p,active:false});added++;}
+      }
+      saveP(); renderProfiles(); renderPlay();
+      alert(`${added} profil(s) importé(s) avec succès.`);
+    }catch(e){alert('Erreur lecture JSON : '+e.message);}
+  };
+  reader.readAsText(file);
+}
+
+async function importMrpack(file){
+  try{
+    // .mrpack = ZIP — on lit avec JSZip via CDN (chargé dynamiquement)
+    await ensureJSZip();
+
+    const zip = await JSZip.loadAsync(file);
+
+    // Lire modrinth.index.json
+    const indexFile = zip.file('modrinth.index.json');
+    if(!indexFile) throw new Error('modrinth.index.json introuvable dans ce .mrpack');
+    const indexText = await indexFile.async('text');
+    const index = JSON.parse(indexText);
+
+    // Parser les infos
+    const name       = index.name || file.name.replace('.mrpack','');
+    const mcVersion  = index.dependencies?.minecraft || '';
+    const loader     = detectLoader(index.dependencies);
+    const lver       = detectLoaderVersion(index.dependencies);
+
+    // Parser les mods depuis index.files
+    const mods = (index.files || [])
+      .filter(f => f.path?.startsWith('mods/'))
+      .map(f => {
+        const filename = f.path.split('/').pop();
+        const modrinthId = f.downloads?.[0]?.match(/modrinth\.com\/data\/([^/]+)/)?.[1] || '';
+        return {
+          name: filename.replace(/\.jar$/,''),
+          modrinthId,
+          enabled: true,
+          version: '',
+          author: '',
+          desc: '',
+          icon: '',
+        };
+      });
+
+    const profile = {
+      id: Date.now().toString(),
+      name,
+      version: mcVersion,
+      loader,
+      lver,
+      banner: 'linear-gradient(135deg,#0d2a3d,#1a3a1d)',
+      mods,
+      rp: [],
+      shaders: [],
+      ramMin: null,
+      ramMax: null,
+      jvmArgs: '',
+      gameDir: '',
+      active: false,
+    };
+
+    if(!confirm(`Importer le modpack "${name}" ?\n• MC ${mcVersion}\n• ${cap(loader)} ${lver}\n• ${mods.length} mod(s)`))return;
+
+    P.push(profile);
+    saveP(); renderProfiles(); renderPlay();
+    alert(`Modpack "${name}" importé avec ${mods.length} mod(s) !`);
+
+  }catch(e){
+    alert('Erreur import .mrpack : '+e.message);
+    console.error(e);
+  }
+}
+
+function detectLoader(deps){
+  if(!deps) return 'vanilla';
+  if(deps['fabric-loader']) return 'fabric';
+  if(deps['forge'])         return 'forge';
+  if(deps['neoforge'])      return 'neoforge';
+  if(deps['quilt-loader'])  return 'quilt';
+  return 'vanilla';
+}
+function detectLoaderVersion(deps){
+  if(!deps) return '';
+  return deps['fabric-loader'] || deps['forge'] || deps['neoforge'] || deps['quilt-loader'] || '';
+}
+
+function ensureJSZip(){
+  return new Promise((resolve, reject)=>{
+    if(window.JSZip) return resolve();
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    s.onload=resolve;
+    s.onerror=()=>reject(new Error('Impossible de charger JSZip'));
+    document.head.appendChild(s);
+  });
 }
 
 // ─── INIT ──────────────────────────────────────
@@ -1713,64 +1986,45 @@ function importProfiles(){
 // MS: currently active account (shorthand)
 let ACCOUNTS = JSON.parse(localStorage.getItem('mighty_accounts') || '[]');
 let MS = ACCOUNTS.find(a=>a.active) || null;
-(()=>{updateUserChip();renderAccountsDropdown();loadG();renderPlay();})();
+(()=>{
+  updateUserChip();
+  renderAccountsDropdown();
+  loadG();
+  renderPlay();
+  // Appliquer le fond dès le chargement
+  const initActive = P.find(p=>p.active)||P[0];
+  applyHeroBg(initActive?.version || '1.21');
+})();
 
 // ═══════════════════════════════════════════════════════
 // VERSION BACKGROUNDS
 // ═══════════════════════════════════════════════════════
-const VERSION_NAMES={
-  '1.21.4':'Pale Garden','1.21.3':'Pale Garden','1.21.2':'Pale Garden','1.21.1':'Tricky Trials','1.21':'Tricky Trials',
-  '1.20.6':'Trails & Tales','1.20.5':'Trails & Tales','1.20.4':'Trails & Tales','1.20.3':'Trails & Tales',
-  '1.20.2':'Trails & Tales','1.20.1':'Trails & Tales','1.20':'Trails & Tales',
-  '1.19.4':'The Wild Update','1.19.3':'The Wild Update','1.19.2':'The Wild Update','1.19.1':'The Wild Update','1.19':'The Wild Update',
-  '1.18.2':'Caves & Cliffs Pt.2','1.18.1':'Caves & Cliffs Pt.2','1.18':'Caves & Cliffs Pt.2',
-  '1.17.1':'Caves & Cliffs Pt.1','1.17':'Caves & Cliffs Pt.1',
-  '1.16.5':'Nether Update','1.16.4':'Nether Update','1.16.3':'Nether Update','1.16.2':'Nether Update','1.16.1':'Nether Update','1.16':'Nether Update',
-  '1.15.2':'Buzzy Bees','1.15.1':'Buzzy Bees','1.15':'Buzzy Bees',
-  '1.14.4':'Village & Pillage','1.14.3':'Village & Pillage','1.14.2':'Village & Pillage','1.14.1':'Village & Pillage','1.14':'Village & Pillage',
-  '1.13.2':'Update Aquatic','1.13.1':'Update Aquatic','1.13':'Update Aquatic',
-  '1.12.2':'World of Color','1.12.1':'World of Color','1.12':'World of Color',
-  '1.11.2':'Exploration Update','1.11':'Exploration Update','1.10.2':'Frostburn Update','1.10':'Frostburn Update',
-  '1.9.4':'Combat Update','1.9.2':'Combat Update','1.9':'Combat Update',
-  '1.8.9':'Bountiful Update','1.8.8':'Bountiful Update','1.8.4':'Bountiful Update','1.8':'Bountiful Update',
-  '1.7.10':'Changed the World','1.7.9':'Changed the World','1.7.2':'Changed the World',
-  '1.6.4':'Horse Update','1.6.2':'Horse Update','1.6.1':'Horse Update',
-  '1.5.2':'Redstone Update','1.5.1':'Redstone Update',
-  '1.4.7':'Pretty Scary Update','1.4.5':'Pretty Scary Update',
-  '1.3.2':'Easy Update','1.2.5':'Moar Stacked','1.1':'Adventure','1.0':'Release',
-};
 // Official Minecraft key art by version
-const VERSION_IMG={
-  '1.21.4':'https://www.minecraft.net/content/dam/games/minecraft/key-art/games_mf-game-minecraft_java-edition-bg_1920x1080.jpg',
-  '1.21.3':'https://www.minecraft.net/content/dam/games/minecraft/key-art/games_mf-game-minecraft_java-edition-bg_1920x1080.jpg',
-  '1.21.1':'https://www.minecraft.net/content/dam/games/minecraft/key-art/MC_Update_BannerGraphic_1920x1080.jpg',
-  '1.20.4':'https://www.minecraft.net/content/dam/games/minecraft/key-art/MC-Java-Edition_Hero-Image_1280x720.jpg',
-  '1.20.1':'https://www.minecraft.net/content/dam/games/minecraft/key-art/MC-Java-Edition_Hero-Image_1280x720.jpg',
-};
+const VERSION_IMG={}; // Pas d'images externes — on utilise les gradients
 // Gradient fallbacks per major (no internet needed)
 const VERSION_GRAD={
-  '1.21':'linear-gradient(160deg,#071a09 0%,#0e3316 40%,#071a0e 100%)',
-  '1.20':'linear-gradient(160deg,#1a1505 0%,#332e08 45%,#1a1505 100%)',
-  '1.19':'linear-gradient(160deg,#040f18 0%,#0b2232 45%,#091828 100%)',
-  '1.18':'linear-gradient(160deg,#06101e 0%,#0e2848 45%,#081420 100%)',
-  '1.17':'linear-gradient(160deg,#08102a 0%,#162258 45%,#0a1630 100%)',
-  '1.16':'linear-gradient(160deg,#1a0600 0%,#4a1000 45%,#1a0600 100%)',
-  '1.15':'linear-gradient(160deg,#0e1a04 0%,#243a08 45%,#0e1a04 100%)',
-  '1.14':'linear-gradient(160deg,#1a1008 0%,#3a2814 45%,#1a1008 100%)',
-  '1.13':'linear-gradient(160deg,#04121a 0%,#082838 45%,#041520 100%)',
-  '1.12':'linear-gradient(160deg,#0e0428 0%,#28106a 45%,#0e0428 100%)',
-  '1.11':'linear-gradient(160deg,#121208 0%,#2a2a14 45%,#121208 100%)',
-  '1.10':'linear-gradient(160deg,#080e14 0%,#1a2a3a 45%,#0a121e 100%)',
-  '1.9' :'linear-gradient(160deg,#100808 0%,#281010 45%,#100808 100%)',
-  '1.8' :'linear-gradient(160deg,#080808 0%,#181818 45%,#080808 100%)',
-  '1.7' :'linear-gradient(160deg,#060e06 0%,#142414 45%,#060e06 100%)',
-  '1.6' :'linear-gradient(160deg,#140c04 0%,#2e1e08 45%,#140c04 100%)',
-  '1.5' :'linear-gradient(160deg,#0e0808 0%,#241010 45%,#0e0808 100%)',
-  '1.4' :'linear-gradient(160deg,#040404 0%,#141428 45%,#040404 100%)',
-  '1.3' :'linear-gradient(160deg,#0a0a0a 0%,#1a1a1a 45%,#0a0a0a 100%)',
-  '1.2' :'linear-gradient(160deg,#080808 0%,#181818 45%,#080808 100%)',
-  '1.1' :'linear-gradient(160deg,#060606 0%,#141414 45%,#060606 100%)',
-  '1.0' :'linear-gradient(160deg,#040404 0%,#101010 45%,#040404 100%)',
+  '1.21':'linear-gradient(160deg,#0a2e10 0%,#1a5228 40%,#0d2e14 100%)',
+  '1.20':'linear-gradient(160deg,#2a1a05 0%,#52340a 45%,#2a1a05 100%)',
+  '1.19':'linear-gradient(160deg,#051828 0%,#0e3a52 45%,#071e30 100%)',
+  '1.18':'linear-gradient(160deg,#081828 0%,#103660 45%,#081a2e 100%)',
+  '1.17':'linear-gradient(160deg,#0a1440 0%,#1a2e70 45%,#0c1848 100%)',
+  '1.16':'linear-gradient(160deg,#2a0a00 0%,#6a1a00 45%,#2a0a00 100%)',
+  '1.15':'linear-gradient(160deg,#142808 0%,#2e5210 45%,#142808 100%)',
+  '1.14':'linear-gradient(160deg,#281808 0%,#503014 45%,#281808 100%)',
+  '1.13':'linear-gradient(160deg,#04182a 0%,#0a3450 45%,#061e30 100%)',
+  '1.12':'linear-gradient(160deg,#160840 0%,#341888 45%,#160840 100%)',
+  '1.11':'linear-gradient(160deg,#1a1a10 0%,#3a3820 45%,#1a1a10 100%)',
+  '1.10':'linear-gradient(160deg,#0c1420 0%,#20364a 45%,#0e1828 100%)',
+  '1.9' :'linear-gradient(160deg,#1a0c0c 0%,#381818 45%,#1a0c0c 100%)',
+  '1.8' :'linear-gradient(160deg,#0e0e10 0%,#242428 45%,#0e0e10 100%)',
+  '1.7' :'linear-gradient(160deg,#0a1608 0%,#1c3016 45%,#0a1608 100%)',
+  '1.6' :'linear-gradient(160deg,#201408 0%,#402c10 45%,#201408 100%)',
+  '1.5' :'linear-gradient(160deg,#160e0e 0%,#2e1c1c 45%,#160e0e 100%)',
+  '1.4' :'linear-gradient(160deg,#080808 0%,#1e1e30 45%,#080808 100%)',
+  '1.3' :'linear-gradient(160deg,#101010 0%,#242424 45%,#101010 100%)',
+  '1.2' :'linear-gradient(160deg,#0c0c0c 0%,#202020 45%,#0c0c0c 100%)',
+  '1.1' :'linear-gradient(160deg,#0a0a0a 0%,#1c1c1c 45%,#0a0a0a 100%)',
+  '1.0' :'linear-gradient(160deg,#080808 0%,#181818 45%,#080808 100%)',
 };
 function getVerGrad(ver){
   for(const k of Object.keys(VERSION_GRAD)){if(ver.startsWith(k))return VERSION_GRAD[k];}
@@ -1778,18 +2032,28 @@ function getVerGrad(ver){
 }
 function applyHeroBg(ver){
   const el=document.getElementById('hero-img'); if(!el)return;
-  el.classList.add('fading');
+  // Fade out
+  el.style.transition='opacity .35s';
+  el.style.opacity='0';
   setTimeout(()=>{
-    if(VERSION_IMG[ver]){
+    const grad=getVerGrad(ver);
+    const url=VERSION_IMG[ver];
+    if(url){
       const img=new Image();
-      img.onload=()=>{el.style.cssText='position:absolute;inset:0;background-size:cover;background-position:center top;background-image:url('+VERSION_IMG[ver]+')';el.classList.remove('fading');};
-      img.onerror=()=>{el.style.cssText='position:absolute;inset:0;background:'+getVerGrad(ver);el.classList.remove('fading');};
-      img.src=VERSION_IMG[ver];
+      img.onload=()=>{
+        // Image loaded — apply as background-image ON TOP of gradient
+        el.style.cssText='position:absolute;inset:0;background-size:cover;background-position:center;background-image:url('+url+');transition:opacity .35s;opacity:1';
+      };
+      img.onerror=()=>{
+        // URL failed — use gradient
+        el.style.cssText='position:absolute;inset:0;background:'+grad+';transition:opacity .35s;opacity:1';
+      };
+      img.src=url;
     } else {
-      el.style.cssText='position:absolute;inset:0;background:'+getVerGrad(ver);
-      el.classList.remove('fading');
+      // No URL — use gradient directly
+      el.style.cssText='position:absolute;inset:0;background:'+grad+';transition:opacity .35s;opacity:1';
     }
-  },280);
+  },200);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1923,12 +2187,8 @@ async function startMSAuth(){
     body.innerHTML=`<div class="empty"><p style="color:var(--red);margin-bottom:12px">${errMsg}</p><button class="btn btn-ghost btn-sm" style="margin:0 auto" onclick="openMSLogin()">Réessayer</button></div>`;
     return;
   }
-  // Demo simulation
-  await new Promise(r=>setTimeout(r,800));
-  body.innerHTML='<div class="ms-loading"><div class="spinner"></div><p>Vérification de la licence…</p></div>';
-  await new Promise(r=>setTimeout(r,2000));
-  addAccount({name:'MightyPlayer',email:'joueur@outlook.fr',uuid:'069a79f4-44e9-4726-a5be-fca90e38aaf5',accessToken:'demo_'+Date.now(),premium:true,avatar:'https://mc-heads.net/avatar/069a79f4-44e9-4726-a5be-fca90e38aaf5/32'});
-  closeOv('ov-mslogin');
+  // Hors Electron — afficher un message d'erreur
+  body.innerHTML='<div class="empty"><p style="color:var(--text1);text-align:center;padding:12px">La connexion Microsoft nécessite l\'application Electron.<br><span style="font-size:11px;color:var(--text2)">Lance le launcher avec npm start.</span></p></div>';
 }
 
 function addAccount(acct){

@@ -4,6 +4,28 @@ const https = require('https')
 const http  = require('http')
 const { URL } = require('url')
 
+// ── OPTIMISATION RAM ─────────────────────────────────────────────────
+// Limiter la mémoire V8 du process principal
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=128')
+// Désactiver le rendu GPU inutile (économise ~30-50Mo)
+app.commandLine.appendSwitch('disable-gpu')
+app.commandLine.appendSwitch('disable-software-rasterizer')
+// Réduire la mémoire du renderer
+app.commandLine.appendSwitch('renderer-process-limit', '1')
+app.commandLine.appendSwitch('disable-background-networking')
+// Pas de logs de crash inutiles
+app.commandLine.appendSwitch('disable-crash-reporter')
+
+// ═══════════════════════════════════════
+// MIGHTY — AUTH MICROSOFT / MINECRAFT
+//
+// On utilise le Client ID officiel de l'app Minecraft (Xbox)
+// C'est exactement ce que font Prism Launcher, MultiMC, etc.
+// Aucune app Azure à créer, aucun secret nécessaire.
+// ═══════════════════════════════════════
+
+// Client ID officiel de l'app "Minecraft Launcher" de Microsoft
+// Utilisé par tous les launchers tiers légitimes
 const MS_CLIENT_ID = '00000000402b5328'
 const MS_REDIRECT  = 'https://login.live.com/oauth20_desktop.srf'
 const MS_SCOPE     = 'service::user.auth.xboxlive.com::MBI_SSL'
@@ -25,6 +47,10 @@ function createWindow() {
       preload: path.join(__dirname, 'src', 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      backgroundThrottling: true,   // ralentir quand en arrière-plan
+      spellcheck: false,            // pas de correcteur orthographique
+      enableWebSQL: false,          // désactiver WebSQL inutile
+      v8CacheOptions: 'bypassHeuristics', // cache V8 agressif
     },
     show: false,
     ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset' } : {}),
@@ -32,6 +58,11 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, 'src', 'index.html'))
   mainWindow.once('ready-to-show', () => mainWindow.show())
   mainWindow.on('closed', () => { mainWindow = null })
+
+  // Libérer la mémoire quand Minecraft est lancé et la fenêtre minimisée
+  mainWindow.on('minimize', () => {
+    if (global.gameRunning) mainWindow.webContents.setBackgroundThrottling(true)
+  })
 }
 
 app.whenReady().then(() => {
@@ -50,6 +81,11 @@ ipcMain.on('open-log', () => {
   if (require('fs').existsSync(logPath)) shell.openPath(logPath)
 })
 
+// ═══════════════════════════════════════
+// FLUX AUTH COMPLET
+// Méthode MSA legacy (login.live.com) — même méthode que Prism/MultiMC
+// Pas besoin d'app Azure personnelle
+// ═══════════════════════════════════════
 ipcMain.handle('ms-login', async () => {
   try {
     console.log('[Auth] Étape 1 : ouverture fenêtre Microsoft...')
@@ -89,6 +125,9 @@ ipcMain.handle('ms-login', async () => {
   }
 })
 
+// ─── ÉTAPE 1 : Ouvre la fenêtre login.live.com, intercepte le redirect ───
+// Pas de serveur local — on intercepte directement l'URL de redirect
+// dans la fenêtre Electron (méthode utilisée par Prism Launcher)
 function getMicrosoftCode() {
   return new Promise((resolve, reject) => {
     const params = new URLSearchParams({
@@ -112,7 +151,7 @@ function getMicrosoftCode() {
         nodeIntegration: false,
         contextIsolation: true,
       },
-      title: 'Connexion Microsoft — ZenithMC',
+      title: 'Connexion Microsoft — Mighty',
       backgroundColor: '#ffffff',
       autoHideMenuBar: true,
     })
@@ -361,15 +400,26 @@ function getMinecraftProfile(accessToken) {
   })
 }
 
+// ─── MC VERSIONS ───
+ipcMain.handle('get-mc-versions', async () => {
+  try {
+    const data = await httpsGetJSON('https://launchermeta.mojang.com/mc/game/version_manifest_v2.json')
+    return { success: true, versions: data.versions || [] }
+  } catch(e) {
+    return { success: false, error: e.message }
+  }
+})
+
 // ─── MODRINTH PROXY ───
-ipcMain.handle('modrinth-search', async (_, params) => {
+ipcMain.handle('modrinth-search'
+, async (_, params) => {
   return new Promise((resolve, reject) => {
     const qs = new URLSearchParams(params).toString()
     const req = https.request({
       hostname: 'api.modrinth.com',
       path:     `/v2/search?${qs}`,
       method:   'GET',
-      headers:  { 'User-Agent': 'ZenithMC/1.0', 'Accept': 'application/json' },
+      headers:  { 'User-Agent': 'Mighty/1.0', 'Accept': 'application/json' },
     }, res => {
       let data = ''
       res.on('data', d => data += d)
@@ -391,6 +441,246 @@ ipcMain.handle('launch-minecraft', async (_, profile, settings) => {
   catch (err) { return { success: false, error: err.message } }
 })
 
+// ── Java Runtime Download ────────────────────────────────────────────
+// Mojang hosts all Java runtimes at a known manifest URL.
+// We download the right one for the current OS/version automatically.
+const JAVA_MANIFEST_URL = 'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json'
+
+async function ensureJavaRuntime(component, mcDir) {
+  const runtimeDir = path2.join(mcDir, 'runtime', component)
+
+  // Check if already installed — look for javaw.exe / java
+  const existing = findJavaBin(runtimeDir, component)
+  if (existing) {
+    console.log('[JavaDL] Already installed:', existing)
+    return existing
+  }
+
+  console.log(`[JavaDL] Need to download Java runtime: ${component}`)
+
+  // 1. Fetch the global Java runtime manifest
+  mainWindow?.webContents.send('launch-progress', { step: 'java', msg: `Téléchargement Java (${component})…`, pct: 0 })
+
+  const allManifest = await httpsGetJSON(JAVA_MANIFEST_URL)
+
+  // 2. Pick the right platform key
+  const platformKey = getPlatformKey()
+  const platformRuntimes = allManifest[platformKey]
+  if (!platformRuntimes) throw new Error(`Plateforme non supportée: ${platformKey}`)
+
+  const runtimeEntry = platformRuntimes[component]
+  if (!runtimeEntry || !runtimeEntry.length) {
+    throw new Error(`Runtime Java "${component}" non trouvé pour ${platformKey}`)
+  }
+
+  const manifestUrl = runtimeEntry[0].manifest.url
+  console.log('[JavaDL] Fetching file manifest from:', manifestUrl)
+
+  // 3. Fetch the file manifest for this runtime
+  const fileManifest = await httpsGetJSON(manifestUrl)
+  const files = Object.entries(fileManifest.files || {})
+
+  // Count downloadable files
+  const downloadables = files.filter(([, f]) => f.type === 'file' && f.downloads?.raw)
+  const total = downloadables.length
+  console.log(`[JavaDL] ${total} files to download`)
+
+  // 4. Download all files
+  let done = 0
+  const concurrency = 8  // parallel downloads
+  const queue = [...downloadables]
+
+  async function downloadWorker() {
+    while (queue.length > 0) {
+      const [filePath, fileInfo] = queue.shift()
+      const dest = path2.join(runtimeDir, filePath.replace(/\//g, path2.sep))
+      const dir = path2.dirname(dest)
+
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+      if (fs.existsSync(dest)) { done++; continue }  // skip if exists
+
+      try {
+        await httpsDownloadFile(fileInfo.downloads.raw.url, dest)
+        // Make executable if it's a binary
+        if (filePath.endsWith('/java') || filePath.endsWith('/javaw') || !path2.extname(filePath)) {
+          try { fs.chmodSync(dest, 0o755) } catch(e) {}
+        }
+      } catch(e) {
+        console.warn('[JavaDL] Failed to download:', filePath, e.message)
+      }
+
+      done++
+      const pct = Math.round((done / total) * 100)
+      if (done % 20 === 0 || done === total) {
+        mainWindow?.webContents.send('launch-progress', {
+          step: 'java',
+          msg: `Java (${component}) : ${done}/${total} fichiers…`,
+          pct
+        })
+      }
+    }
+  }
+
+  // Run workers in parallel
+  const workers = Array.from({ length: concurrency }, downloadWorker)
+  await Promise.all(workers)
+
+  mainWindow?.webContents.send('launch-progress', { step: 'java', msg: 'Java installé ✓', pct: 100 })
+
+  // Find and return the java executable
+  const javaBin = findJavaBin(runtimeDir, component)
+  if (!javaBin) throw new Error(`Java installé mais exécutable introuvable dans ${runtimeDir}`)
+  console.log('[JavaDL] Download complete:', javaBin)
+  return javaBin
+}
+
+function getPlatformKey() {
+  if (process.platform === 'win32') {
+    return process.arch === 'x64' ? 'windows-x64' : 'windows-x86'
+  } else if (process.platform === 'darwin') {
+    return process.arch === 'arm64' ? 'mac-os-arm64' : 'mac-os'
+  } else {
+    return process.arch === 'x64' ? 'linux' : 'linux-i386'
+  }
+}
+
+function findJavaBin(runtimeDir, component) {
+  if (!fs.existsSync(runtimeDir)) return null
+  // Scan all subdirs for the javaw.exe / java binary
+  try {
+    const entries = fs.readdirSync(runtimeDir)
+    for (const entry of entries) {
+      const candidates = [
+        path2.join(runtimeDir, entry, component, 'bin', 'javaw.exe'),
+        path2.join(runtimeDir, entry, component, 'bin', 'java'),
+        path2.join(runtimeDir, entry, 'bin', 'javaw.exe'),
+        path2.join(runtimeDir, entry, 'bin', 'java'),
+      ]
+      for (const c of candidates) {
+        if (fs.existsSync(c)) return c
+      }
+    }
+    // Also check direct bin/ without subdirectory
+    const direct = [
+      path2.join(runtimeDir, 'bin', 'javaw.exe'),
+      path2.join(runtimeDir, 'bin', 'java'),
+    ]
+    for (const c of direct) {
+      if (fs.existsSync(c)) return c
+    }
+  } catch(e) {}
+  return null
+}
+
+function httpsGetJSON(url) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url)
+    const mod = u.protocol === 'https:' ? require('https') : require('http')
+    mod.get(url, { headers: { 'User-Agent': 'mighty-launcher/1.0' } }, res => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        return httpsGetJSON(res.headers.location).then(resolve).catch(reject)
+      }
+      let data = ''
+      res.on('data', d => data += d)
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)) }
+        catch(e) { reject(new Error('JSON parse error: ' + data.slice(0, 100))) }
+      })
+    }).on('error', reject)
+  })
+}
+
+function httpsDownloadFile(url, dest) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url)
+    const mod = u.protocol === 'https:' ? require('https') : require('http')
+    mod.get(url, { headers: { 'User-Agent': 'mighty-launcher/1.0' } }, res => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        return httpsDownloadFile(res.headers.location, dest).then(resolve).catch(reject)
+      }
+      if (res.statusCode !== 200) {
+        reject(new Error(`HTTP ${res.statusCode} for ${url}`)); return
+      }
+      const file = fs.createWriteStream(dest)
+      res.pipe(file)
+      file.on('finish', () => file.close(resolve))
+      file.on('error', reject)
+    }).on('error', reject)
+  })
+}
+
+// ── Télécharge le JSON de version depuis le manifest Mojang ──────────
+async function downloadVersionJson(version, destJson) {
+  // 1. Chercher l'URL dans le manifest global
+  const manifest = await httpsGetJSON('https://launchermeta.mojang.com/mc/game/version_manifest_v2.json')
+  const entry = manifest.versions?.find(v => v.id === version)
+  if (!entry) throw new Error(`Version "${version}" introuvable dans le manifest Mojang.`)
+
+  // 2. Télécharger le JSON de cette version
+  await httpsDownloadFile(entry.url, destJson)
+  console.log(`[Version] JSON téléchargé : ${version}`)
+}
+
+// ── Télécharge le .jar client depuis le JSON de version ──────────────
+async function downloadVersionJar(version, vJson, destJar) {
+  if (!fs.existsSync(vJson)) throw new Error(`JSON de version manquant pour ${version}`)
+  const vdata = JSON.parse(fs.readFileSync(vJson, 'utf8'))
+  const clientUrl = vdata.downloads?.client?.url
+  if (!clientUrl) throw new Error(`Pas d'URL client dans le JSON de ${version}`)
+
+  console.log(`[Version] Téléchargement du jar : ${clientUrl}`)
+  let lastPct = 10
+
+  // Téléchargement avec progression
+  await new Promise((resolve, reject) => {
+    const u = new URL(clientUrl)
+    const mod = require('https')
+    mod.get(clientUrl, { headers: { 'User-Agent': 'Mighty/1.0' } }, res => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        return httpsDownloadFile(res.headers.location, destJar).then(resolve).catch(reject)
+      }
+      if (res.statusCode !== 200) { reject(new Error(`HTTP ${res.statusCode}`)); return }
+
+      const total = parseInt(res.headers['content-length'] || '0')
+      let received = 0
+      const file = fs.createWriteStream(destJar)
+
+      res.on('data', chunk => {
+        received += chunk.length
+        if (total > 0) {
+          const pct = Math.round(10 + (received / total) * 60)
+          if (pct !== lastPct) {
+            lastPct = pct
+            mainWindow?.webContents.send('launch-progress', {
+              step: 'version',
+              msg: `Minecraft ${version} : ${Math.round(received/1024/1024)}/${Math.round(total/1024/1024)} Mo…`,
+              pct
+            })
+          }
+        }
+      })
+      res.pipe(file)
+      file.on('finish', () => file.close(resolve))
+      file.on('error', reject)
+    }).on('error', reject)
+  })
+
+  // Vérifier le SHA1 si dispo
+  const expectedSha = vdata.downloads?.client?.sha1
+  if (expectedSha) {
+    const crypto = require('crypto')
+    const fileBuffer = fs.readFileSync(destJar)
+    const actualSha = crypto.createHash('sha1').update(fileBuffer).digest('hex')
+    if (actualSha !== expectedSha) {
+      fs.unlinkSync(destJar)
+      throw new Error(`SHA1 invalide pour ${version}.jar — téléchargement corrompu.`)
+    }
+  }
+
+  mainWindow?.webContents.send('launch-progress', { step: 'version', msg: `Minecraft ${version} téléchargé ✓`, pct: 70 })
+  console.log(`[Version] Jar téléchargé : ${version}`)
+}
+
 async function launchMinecraft(profile, settings) {
   const mcDir   = profile.gameDir || getDefaultMCDir()
   const version = profile.version
@@ -401,11 +691,23 @@ async function launchMinecraft(profile, settings) {
   const vJar       = path2.join(versionDir, `${version}.jar`)
   const vJson      = path2.join(versionDir, `${version}.json`)
 
-  if (!fs.existsSync(vJar))  throw new Error(`Version ${version} non installée.\n\nLancez d'abord le launcher Mojang officiel pour télécharger cette version.`)
-  if (!fs.existsSync(vJson)) throw new Error(`Manifeste manquant pour ${version}.`)
+  // ── Téléchargement automatique de la version si absente ──────────
+  if (!fs.existsSync(versionDir)) fs.mkdirSync(versionDir, { recursive: true })
+
+  if (!fs.existsSync(vJson)) {
+    mainWindow?.webContents.send('launch-progress', { step: 'version', msg: `Récupération du manifeste ${version}…`, pct: 5 })
+    await downloadVersionJson(version, vJson)
+  }
+  if (!fs.existsSync(vJar)) {
+    mainWindow?.webContents.send('launch-progress', { step: 'version', msg: `Téléchargement de Minecraft ${version}…`, pct: 10 })
+    await downloadVersionJar(version, vJson, vJar)
+  }
 
   const manifest = JSON.parse(fs.readFileSync(vJson, 'utf8'))
   const libDir   = path2.join(mcDir, 'libraries')
+
+  // ── Download missing libraries ───────────────────────────────────
+  await downloadMissingLibraries(manifest, libDir)
 
   // ── Natives directory ─────────────────────────────────────────────
   let nativesDir = path2.join(versionDir, `${version}-natives`)
@@ -487,39 +789,83 @@ async function launchMinecraft(profile, settings) {
     jvmArgs.push(...profile.jvmArgs.trim().split(/\s+/).filter(Boolean))
   }
 
-  // ── Game args — filter out empty-value optional args ────────────────
+  // ── Game args — filter out empty-value optional args ─────────────────
   const rawGameArgs = buildGameArgs(manifest, vars)
-  // Remove pairs where value is empty (e.g. --quickPlayPath "")
   const gameArgs = []
   for (let i = 0; i < rawGameArgs.length; i++) {
     const arg = rawGameArgs[i]
-    const next = rawGameArgs[i + 1]
-    // If next arg is empty string, skip both this flag and its empty value
-    if (next === '' || next === undefined) {
-      if (arg.startsWith('--')) { i++; continue } // skip flag + empty value
+    if (!arg || arg === '') continue
+
+    // If this is a --flag, check if its value is empty or another --flag
+    if (arg.startsWith('--')) {
+      const nextArg = rawGameArgs[i + 1]
+      // Check if next is a value (not another flag, not empty, not undefined)
+      const hasValue = nextArg !== undefined && nextArg !== '' && !nextArg.startsWith('--')
+      if (hasValue) {
+        gameArgs.push(arg, nextArg)
+        i++ // skip next since we consumed it
+      } else if (nextArg === '' || (nextArg !== undefined && !nextArg.startsWith('--'))) {
+        // Flag with empty value — skip both
+        i++
+      } else {
+        // Standalone flag (like --demo) — skip it
+        // --demo should never be passed as it locks the game to demo mode
+        if (arg === '--demo') { continue }
+        gameArgs.push(arg)
+      }
+    } else {
+      gameArgs.push(arg)
     }
-    if (arg === '') continue  // skip standalone empty args (like --demo with no value)
-    gameArgs.push(arg)
   }
 
   // ── Final args: JVM + -cp + mainClass + game ─────────────────────
   // NOTE: -cp appears exactly ONCE here
   const fullArgs = [...jvmArgs, '-cp', cp, manifest.mainClass, ...gameArgs]
 
-  // ── Java: use Minecraft's bundled JRE (correct version for this MC) ──
-  const javaPath = settings.javaPath || findJavaForVersion(version, mcDir)
+  // ── Java: download if not present, use bundled JRE otherwise ─────────
+  const component = manifest?.javaVersion?.component || guessRuntimeComponent(version)
+  let javaPath
+  if (settings.javaPath && fs.existsSync(settings.javaPath)) {
+    javaPath = settings.javaPath
+    console.log('[Java] Using custom path from settings:', javaPath)
+  } else {
+    // This downloads Java automatically if not present
+    mainWindow?.webContents.send('launch-progress', { step: 'java-check', msg: `Vérification Java (${component})…`, pct: 0 })
+    javaPath = await ensureJavaRuntime(component, mcDir)
+  }
 
   // ── Log ────────────────────────────────────────────────────────────
   const logPath = path2.join(app.getPath('userData'), 'launch.log')
+
+  // Scan runtime dir for debug info
+  const runtimeDir = path2.join(mcDir, 'runtime')
+  let runtimeInfo = 'runtime dir not found'
+  if (fs.existsSync(runtimeDir)) {
+    try {
+      const components = fs.readdirSync(runtimeDir)
+      runtimeInfo = components.map(comp => {
+        const compPath = path2.join(runtimeDir, comp)
+        try {
+          const platforms = fs.readdirSync(compPath)
+          return `  ${comp}/\n    ${platforms.join(', ')}`
+        } catch(e) { return `  ${comp}/` }
+      }).join('\n')
+    } catch(e) { runtimeInfo = 'error reading: ' + e.message }
+  }
   try {
     fs.writeFileSync(logPath, [
       `=== Mighty Launch Log — ${new Date().toISOString()} ===`,
       `Version: ${version}`,
-      `Java: ${javaPath}`,
+      `Required Java component: ${manifest?.javaVersion?.component || 'unknown (guessed)'}`,
+      `Java path used: ${javaPath}`,
       `Java exists: ${fs.existsSync(javaPath)}`,
       `mcDir: ${mcDir}`,
       `Natives: ${nativesDir}`,
       `MainClass: ${manifest.mainClass}`,
+      ``,
+      `Runtime directory (${runtimeDir}):`,
+      runtimeInfo,
+      ``,
       `Args count: ${fullArgs.length}`,
       `Full args:\n${fullArgs.map((a, i) => `  [${i}] ${a}`).join('\n')}`,
       '',
@@ -541,16 +887,40 @@ async function launchMinecraft(profile, settings) {
     mc.stderr?.on('data', d => { stderr += d.toString() })
     mc.stdout?.on('data', d => { console.log('[MC stdout]', d.toString().trim()) })
 
+    let launched = false
     const timeout = setTimeout(() => {
       // Still running after 4s = game launched successfully
+      launched = true
+      global.gameRunning = true
       try { fs.appendFileSync(logPath, `\nGame started (pid ${mc.pid})\n`) } catch(e) {}
       mc.unref()
+
+      // ── OPTIMISATION RAM : minimiser le launcher pendant le jeu ──
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        // Attendre 2s que MC soit bien lancé puis minimiser
+        setTimeout(() => {
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.minimize()
+            // Vider le cache du renderer pour libérer la RAM
+            mainWindow.webContents.session.clearCache()
+          }
+        }, 2000)
+      }
+
       resolve()
     }, 4000)
 
     mc.on('exit', (code) => {
       clearTimeout(timeout)
-      if (code !== 0) {
+      global.gameRunning = false
+      if (launched) {
+        // Jeu fermé — restaurer la fenêtre
+        mainWindow?.webContents.send('game-exit', { code })
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.restore()
+          mainWindow.focus()
+        }
+      } else if (code !== 0) {
         const errMsg = stderr ? stderr.substring(0, 1000) : `Java a quitté avec le code ${code}`
         try { fs.appendFileSync(logPath, `\nEXIT CODE ${code}\nSTDERR:\n${stderr}\n`) } catch(e) {}
         reject(new Error(errMsg))
@@ -613,67 +983,72 @@ async function extractNativesSimple(manifest, libDir, nativesDir) {
   }
 }
 
-function findJavaForVersion(mcVersion, mcDir) {
-  const parts = mcVersion.split('.')
-  const minor = parseInt(parts[1] || '0')
+function findJavaForVersion(mcVersion, mcDir, manifest) {
+  // ── Method 1: Read javaVersion.component from the version manifest ──
+  // This is the MOST reliable way — Mojang tells us exactly which JRE to use
+  const component = manifest?.javaVersion?.component || guessRuntimeComponent(mcVersion)
+  console.log(`[Java] Version manifest requires component: "${component}"`)
 
-  // Minecraft bundles its own JRE in .minecraft/runtime/
-  // This is ALWAYS the right Java — it's exactly what Mojang chose for this version
-  const runtimeDir = path2.join(mcDir, 'runtime')
+  const runtimeBase = path2.join(mcDir, 'runtime', component)
 
-  if (fs.existsSync(runtimeDir)) {
-    // Runtime component names per MC version:
-    // 1.21+    → java-runtime-delta  (Java 21)
-    // 1.18-1.20→ java-runtime-gamma  (Java 17)
-    // 1.17     → java-runtime-alpha  (Java 16)
-    // < 1.17   → jre-legacy          (Java 8)
-    const runtimePriority =
-      minor >= 21 ? ['java-runtime-delta', 'java-runtime-gamma']
-    : minor >= 18 ? ['java-runtime-gamma', 'java-runtime-delta']
-    : minor >= 17 ? ['java-runtime-alpha', 'java-runtime-gamma']
-    :               ['jre-legacy', 'java-runtime-alpha']
-
-    const platform =
-      process.platform === 'win32' ? 'windows-x64'
-    : process.platform === 'darwin' ? 'mac-os'
-    : 'linux'
-
-    for (const rt of runtimePriority) {
-      const candidates = [
-        path2.join(runtimeDir, rt, platform, rt, 'bin', 'javaw.exe'),   // Windows
-        path2.join(runtimeDir, rt, platform, rt, 'bin', 'java'),        // Linux/Mac
-        path2.join(runtimeDir, rt, 'windows-x64', rt, 'bin', 'javaw.exe'),
-        path2.join(runtimeDir, rt, 'windows-x86', rt, 'bin', 'javaw.exe'),
-        path2.join(runtimeDir, rt, 'mac-os', rt, 'jre.bundle', 'Contents', 'Home', 'bin', 'java'),
-        path2.join(runtimeDir, rt, 'linux', rt, 'bin', 'java'),
-      ]
-      for (const c of candidates) {
-        if (fs.existsSync(c)) {
-          console.log(`[Java] Using Minecraft bundled JRE (${rt}): ${c}`)
-          return c
+  if (fs.existsSync(runtimeBase)) {
+    // Scan all subdirectories (platform folders: windows-x64, windows-x86, etc.)
+    try {
+      const platformDirs = fs.readdirSync(runtimeBase)
+      for (const platformDir of platformDirs) {
+        const candidates = [
+          // Standard structure: runtime/<component>/<platform>/<component>/bin/javaw.exe
+          path2.join(runtimeBase, platformDir, component, 'bin', 'javaw.exe'),
+          path2.join(runtimeBase, platformDir, component, 'bin', 'java'),
+          // Sometimes no intermediate component folder
+          path2.join(runtimeBase, platformDir, 'bin', 'javaw.exe'),
+          path2.join(runtimeBase, platformDir, 'bin', 'java'),
+        ]
+        for (const c of candidates) {
+          if (fs.existsSync(c)) {
+            console.log(`[Java] ✅ Found bundled JRE: ${c}`)
+            return c
+          }
         }
       }
-      // Try listing the directory to find actual subfolder name
-      const rtBase = path2.join(runtimeDir, rt)
-      if (fs.existsSync(rtBase)) {
-        try {
-          const subdirs = fs.readdirSync(rtBase)
-          for (const sub of subdirs) {
-            const javaw = path2.join(rtBase, sub, rt, 'bin', 'javaw.exe')
-            const java  = path2.join(rtBase, sub, rt, 'bin', 'java')
-            if (fs.existsSync(javaw)) { console.log('[Java] Found via subdir scan:', javaw); return javaw }
-            if (fs.existsSync(java))  { console.log('[Java] Found via subdir scan:', java);  return java  }
+    } catch(e) {
+      console.warn('[Java] Could not scan runtime dir:', e.message)
+    }
+  } else {
+    console.warn(`[Java] Bundled JRE dir not found: ${runtimeBase}`)
+    // List what IS in the runtime dir to help debug
+    const runtimeDir = path2.join(mcDir, 'runtime')
+    if (fs.existsSync(runtimeDir)) {
+      try {
+        const dirs = fs.readdirSync(runtimeDir)
+        console.log('[Java] Available runtime components:', dirs.join(', '))
+        // Try any of the available components
+        for (const dir of dirs) {
+          const base = path2.join(runtimeDir, dir)
+          const platformDirs = fs.readdirSync(base)
+          for (const pd of platformDirs) {
+            const candidates = [
+              path2.join(base, pd, dir, 'bin', 'javaw.exe'),
+              path2.join(base, pd, dir, 'bin', 'java'),
+              path2.join(base, pd, 'bin', 'javaw.exe'),
+            ]
+            for (const c of candidates) {
+              if (fs.existsSync(c)) {
+                console.log(`[Java] ✅ Found fallback bundled JRE: ${c}`)
+                return c
+              }
+            }
           }
-        } catch(e) {}
-      }
+        }
+      } catch(e) {}
+    } else {
+      console.warn('[Java] No runtime directory at all:', runtimeDir)
     }
   }
 
-  // Fallback: system Java (may be wrong version — warn)
-  console.warn(`[Java] ⚠️  No bundled JRE found! Falling back to system Java. MC ${mcVersion} needs Java ${minor >= 21 ? 21 : minor >= 17 ? 17 : 8}`)
-
+  // ── Fallback: system Java ──────────────────────────────────────────
+  console.warn('[Java] ⚠️  No bundled JRE found, using system Java (may be wrong version!)')
   if (process.platform === 'win32') {
-    // Try to find a recent system Java
     const bases = [
       'C:\\Program Files\\Java',
       'C:\\Program Files\\Eclipse Adoptium',
@@ -681,18 +1056,20 @@ function findJavaForVersion(mcVersion, mcDir) {
       'C:\\Program Files\\Zulu',
       process.env.JAVA_HOME ? path2.dirname(process.env.JAVA_HOME) : '',
     ].filter(Boolean)
-
     for (const base of bases) {
       if (!fs.existsSync(base)) continue
       const dirs = fs.readdirSync(base)
         .filter(d => /^(jdk|jre|temurin|zulu)/i.test(d))
-        .sort().reverse()  // prefer newer versions
+        .sort((a, b) => {
+          // Extract version number (e.g. jdk-21.0.1 → 21, jre1.8.0_471 → 8)
+          const va = parseInt((a.match(/(\d+)/) || [0, 0])[1])
+          const vb = parseInt((b.match(/(\d+)/) || [0, 0])[1])
+          return vb - va  // newest first
+        })
+      console.log('[Java] System Java candidates:', dirs)
       for (const d of dirs) {
         const exe = path2.join(base, d, 'bin', 'javaw.exe')
-        if (fs.existsSync(exe)) {
-          console.log('[Java] Using system Java:', exe)
-          return exe
-        }
+        if (fs.existsSync(exe)) { console.log('[Java] System Java:', exe); return exe }
       }
     }
     return 'javaw'
@@ -700,15 +1077,107 @@ function findJavaForVersion(mcVersion, mcDir) {
   return 'java'
 }
 
+function guessRuntimeComponent(mcVersion) {
+  const minor = parseInt(mcVersion.split('.')[1] || '0')
+  if (minor >= 21) return 'java-runtime-delta'
+  if (minor >= 18) return 'java-runtime-gamma'
+  if (minor >= 17) return 'java-runtime-alpha'
+  return 'jre-legacy'
+}
+
+// ── Download missing libraries from Mojang ────────────────────────
+async function downloadMissingLibraries(manifest, libDir) {
+  const missing = []
+
+  for (const lib of manifest.libraries || []) {
+    if (lib.rules && !isAllowed(lib.rules)) continue
+
+    // Only download libs that have a downloads.artifact.url
+    const artifact = lib.downloads?.artifact
+    if (!artifact?.url || !artifact?.path) continue
+
+    const dest = path2.join(libDir, artifact.path.replace(/\//g, path2.sep))
+    if (fs.existsSync(dest)) continue  // already present
+
+    missing.push({ url: artifact.url, dest, name: lib.name || artifact.path })
+  }
+
+  if (missing.length === 0) {
+    console.log('[Libs] All libraries present ✓')
+    return
+  }
+
+  console.log(`[Libs] Downloading ${missing.length} missing libraries…`)
+  mainWindow?.webContents.send('launch-progress', {
+    step: 'libs',
+    msg: `Téléchargement des bibliothèques (0/${missing.length})…`,
+    pct: 0
+  })
+
+  let done = 0
+  const concurrency = 6
+  const queue = [...missing]
+
+  async function worker() {
+    while (queue.length > 0) {
+      const { url, dest, name } = queue.shift()
+      try {
+        const dir = path2.dirname(dest)
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+        await httpsDownloadFile(url, dest)
+        console.log(`[Libs] ✓ ${name}`)
+      } catch(e) {
+        console.warn(`[Libs] ✗ Failed: ${name} — ${e.message}`)
+      }
+      done++
+      if (done % 3 === 0 || done === missing.length) {
+        const pct = Math.round((done / missing.length) * 100)
+        mainWindow?.webContents.send('launch-progress', {
+          step: 'libs',
+          msg: `Bibliothèques : ${done}/${missing.length}…`,
+          pct
+        })
+      }
+    }
+  }
+
+  await Promise.all(Array.from({ length: concurrency }, worker))
+
+  mainWindow?.webContents.send('launch-progress', {
+    step: 'libs',
+    msg: `Bibliothèques téléchargées ✓`,
+    pct: 100
+  })
+  console.log(`[Libs] Done — ${done} libraries downloaded`)
+}
+
 function buildCP(manifest, libDir, jar) {
   const sep  = process.platform === 'win32' ? ';' : ':'
   const jars = [jar]
   for (const lib of manifest.libraries || []) {
     if (lib.rules && !isAllowed(lib.rules)) continue
+
+    // Method 1: downloads.artifact.path (standard modern format)
     const p = lib.downloads?.artifact?.path
-    if (!p) continue
-    const full = path2.join(libDir, p.replace(/\//g, path2.sep))
-    if (fs.existsSync(full)) jars.push(full)
+    if (p) {
+      const full = path2.join(libDir, p.replace(/\//g, path2.sep))
+      if (fs.existsSync(full)) { jars.push(full); continue }
+    }
+
+    // Method 2: derive path from lib.name (group:artifact:version)
+    // e.g. "com.mojang:logging:1.2.7" -> com/mojang/logging/1.2.7/logging-1.2.7.jar
+    if (lib.name) {
+      const parts = lib.name.split(':')
+      if (parts.length >= 3) {
+        const [group, artifact, version, ...rest] = parts
+        const groupPath = group.replace(/\./g, path2.sep)
+        const classifier = rest.length ? `-${rest.join('-')}` : ''
+        const fileName = `${artifact}-${version}${classifier}.jar`
+        const full = path2.join(libDir, groupPath, artifact, version, fileName)
+        if (fs.existsSync(full)) { jars.push(full); continue }
+        console.warn(`[CP] Missing library: ${lib.name} -> ${full}`)
+      }
+    }
   }
   return jars.join(sep)
 }
@@ -745,9 +1214,9 @@ function buildGameArgs(manifest, vars) {
 }
 function getDefaultMCDir() {
   const h = os.homedir()
-  if (process.platform === 'win32') return path2.join(h, 'AppData', 'Roaming', '.minecraft')
-  if (process.platform === 'darwin') return path2.join(h, 'Library', 'Application Support', 'minecraft')
-  return path2.join(h, '.minecraft')
+  if (process.platform === 'win32') return path2.join(h, 'AppData', 'Roaming', 'Mighty')
+  if (process.platform === 'darwin') return path2.join(h, 'Library', 'Application Support', 'Mighty')
+  return path2.join(h, '.mighty')
 }
 function genUUID(name) {
   let h = 0
