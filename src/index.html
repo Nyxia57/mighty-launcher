@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Mighty Launcher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- ═══ CSS ═══ -->
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/play.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/accounts.css">
+</head>
+<body>
+<div id="app">
+
+<!-- ─── TOPBAR ──────────────────────────── -->
+<div id="topbar">
+  <div class="tb-logo">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" stroke="#4ade80" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M12 2v20M2 7l10 5 10-5" stroke="#4ade80" stroke-width="1.2" stroke-linejoin="round" opacity=".6"/>
+    </svg>
+    <span class="tb-logo-name">MIGHTY</span>
+  </div>
+
+  <div class="tb-nav">
+    <button class="tb-nav-btn active" data-page="play" onclick="navPage('play',this)">
+      <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Play
+    </button>
+    <button class="tb-nav-btn" data-page="mods" onclick="navPage('mods',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      Mods
+    </button>
+    <button class="tb-nav-btn" data-page="profiles" onclick="navPage('profiles',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Profils
+    </button>
+  </div>
+
+  <div class="tb-spacer"></div>
+
+  <div class="tb-right">
+    <div class="tb-user" id="tb-user-chip" onclick="toggleAcctDD(event)" title="Comptes">
+      <div class="tb-avatar" id="tb-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div class="tb-user-info">
+        <span class="tb-user-label" id="tb-user-label">Non connecté</span>
+        <span class="tb-user-name" id="tb-username">Invité</span>
+        <span class="tb-user-status offline-ms" id="tb-user-status">Cliquer pour se connecter</span>
+      </div>
+    </div>
+
+    <button class="tb-icon-btn" title="Paramètres" onclick="navPage('settings',null)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+    <button class="tb-icon-btn" title="Plein écran">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    </button>
+
+    <div style="width:1px;height:24px;background:var(--border);margin:0 2px"></div>
+
+    <button class="tb-winbtn" onclick="window.electronAPI?.minimize()">
+      <svg viewBox="0 0 12 12"><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.5"/></svg>
+    </button>
+    <button class="tb-winbtn" onclick="window.electronAPI?.maximize()">
+      <svg viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+    </button>
+    <button class="tb-winbtn close" onclick="window.electronAPI?.close()">
+      <svg viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="1.5"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ─── BODY ──────────────────────────── -->
+<div id="body">
+
+  <!-- SIDE ICONS -->
+  <div id="side-icons">
+    <button class="side-btn" title="Chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </button>
+    <button class="side-btn" title="Amis">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </button>
+    <button class="side-btn" title="Console">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+    </button>
+  </div>
+
+  <!-- PAGES -->
+  <div id="pages">
+
+<!-- ══ PLAY PAGE ══ -->
+<div class="page active" id="play-page">
+  <div class="hero">
+    <div class="hero-img" id="hero-img"></div>
+    <div class="hero-overlay"></div>
+    <div id="hero-ver-badge" class="hero-ver-badge" style="display:none"></div>
+    <div class="hero-particles" id="particles"></div>
+    <div class="hero-content">
+      <div class="hero-title">Bienvenue sur <span>Mighty</span></div>
+      <div class="hero-sub" id="hero-sub">Aucun profil sélectionné — créez un profil pour commencer</div>
+    </div>
+    <div class="hero-launch-strip">
+      <button class="launch-btn" onclick="doLaunch()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        LANCER <span id="launch-loader-label">FABRIC</span>
+      </button>
+      <button class="version-select-btn" onclick="toggleProfileDropdown(event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+        <span id="launch-profile-label">Changer de profil</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <!-- Profile dropdown -->
+      <div id="profile-dropdown" style="display:none;position:absolute;bottom:60px;left:50%;transform:translateX(-50%);
+        background:var(--bg1);border:1px solid var(--border2);border-radius:10px;
+        min-width:260px;max-width:340px;box-shadow:0 -8px 32px rgba(0,0,0,.6);z-index:300;overflow:hidden">
+        <div style="padding:8px 12px;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1.2px;text-transform:uppercase;border-bottom:1px solid var(--border)">Choisir un profil</div>
+        <div id="profile-dropdown-list" style="max-height:220px;overflow-y:auto"></div>
+        <div style="padding:8px 10px;border-top:1px solid var(--border)">
+          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="closeProfileDropdown();navPage('profiles',document.querySelector('[data-page=profiles]'))">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Créer un profil
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-strip">
+    <div class="sdot" id="sdot"></div>
+    <span class="stext" id="stext">Prêt</span>
+    <div class="sprog" id="sprog"><div class="sprogbar" id="sprogbar"></div></div>
+  </div>
+
+  <div class="bottom-panels" style="grid-template-columns:1fr">
+    <div class="panel">
+      <div class="panel-hd">
+        <span class="panel-title" style="display:flex;align-items:center;gap:7px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Amis
+        </span>
+        <span class="panel-link" onclick="openAddFriend()">+ Ajouter</span>
+      </div>
+      <div class="panel-body" id="friends-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODS PAGE ══ -->
+<div class="page" id="mods-page">
+  <div class="mods-topbar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="mod-search" placeholder="Rechercher sur Modrinth..." oninput="debounceSearch()" />
+    </div>
+    <div class="filter-tabs">
+      <button class="ftab active" onclick="setFacet('mod',this)">Mods</button>
+      <button class="ftab" onclick="setFacet('resourcepack',this)">Resource Packs</button>
+      <button class="ftab" onclick="setFacet('shader',this)">Shaders</button>
+    </div>
+    <select class="fsel" id="mod-version-filter" onchange="searchModrinth()">
+      <option value="">Toutes versions</option>
+      <option value="1.21.4">1.21.4</option>
+      <option value="1.21.1">1.21.1</option>
+      <option value="1.20.4">1.20.4</option>
+      <option value="1.20.1">1.20.1</option>
+      <option value="1.19.4">1.19.4</option>
+      <option value="1.18.2">1.18.2</option>
+      <option value="1.16.5">1.16.5</option>
+      <option value="1.12.2">1.12.2</option>
+    </select>
+    <select class="fsel" id="mod-sort" onchange="searchModrinth()">
+      <option value="relevance">Pertinence</option>
+      <option value="downloads">Téléchargements</option>
+      <option value="follows">Abonnés</option>
+      <option value="newest">Récents</option>
+      <option value="updated">Mis à jour</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="navPage('profiles',null)" style="margin-left:auto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+      Mes profils
+    </button>
+  </div>
+  <div class="mods-grid-wrap">
+    <div class="mods-grid" id="mods-grid">
+      <div class="loading-grid"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROFILES PAGE ══ -->
+<div class="page" id="profiles-page">
+  <div class="page-inner">
+    <div class="profiles-hd">
+      <h2>Mes profils</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="importProfiles()" title="Importer (.json ou .mrpack)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importer (.json / .mrpack)
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="exportProfiles()" title="Exporter (.json)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exporter
+        </button>
+        <button class="btn btn-green" onclick="openCreateProfile()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nouveau profil
+        </button>
+      </div>
+    </div>
+    <div class="pgrid" id="pgrid">
+      <div class="add-pcard" onclick="openCreateProfile()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>Créer un profil</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETTINGS PAGE ══ -->
+<div class="page" id="settings-page">
+  <div class="page-inner">
+    <div style="font-size:16px;font-weight:900;margin-bottom:14px">Paramètres</div>
+
+    <div class="settings-section">
+      <div class="ss-hd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Compte Minecraft</span></div>
+      <div class="ss-body" id="account-section"><!-- rendered by JS --></div>
+    </div>
+
+    <div class="settings-section">
+      <div class="ss-hd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg><span>Java & RAM</span></div>
+      <div class="ss-body">
+        <div class="form-row">
+          <div class="sg"><label class="sl">RAM min (Mo)</label><input class="si" type="number" id="g-rmin" value="512" min="256" step="256" oninput="saveG()"/></div>
+          <div class="sg"><label class="sl">RAM max (Mo)</label><input class="si" type="number" id="g-rmax" value="2048" min="512" step="256" oninput="saveG()"/></div>
+        </div>
+        <div class="sg"><label class="sl">Chemin Java</label><input class="si" id="g-java" placeholder="Détection automatique" oninput="saveG()"/></div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="ss-hd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Comportement</span></div>
+      <div class="ss-body">
+        <div class="sr"><div class="sr-lbl"><div class="sr-title">Fermer au lancement</div><div class="sr-sub">Fermer le launcher quand Minecraft démarre</div></div><div class="sw on" id="sw-close" onclick="this.classList.toggle('on');saveG()"></div></div>
+        <div class="sr"><div class="sr-lbl"><div class="sr-title">Vérifier les fichiers</div><div class="sr-sub">Intégrité des fichiers Minecraft avant lancement</div></div><div class="sw on" id="sw-verify" onclick="this.classList.toggle('on');saveG()"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /pages -->
+</div><!-- /body -->
+</div><!-- /app -->
+
+<!-- ═══ MODAL: PROFILE CREATE/EDIT ═══ -->
+<div class="ov" id="ov-profile" onclick="closeOvBg(event,'ov-profile')">
+  <div class="modal wide">
+    <div class="mhd">
+      <span class="mtitle" id="pm-title">Créer un profil</span>
+      <button class="mx" onclick="closeOv('ov-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="mtabs">
+      <div class="mtab active" onclick="mTab('gen',this)">Général</div>
+      <div class="mtab" onclick="mTab('mods-t',this)">Mods</div>
+      <div class="mtab" onclick="mTab('rp-t',this)">Resource Packs</div>
+      <div class="mtab" onclick="mTab('sh-t',this)">Shaders</div>
+      <div class="mtab" onclick="mTab('java-t',this)">Java</div>
+    </div>
+    <div class="mbody">
+      <div class="tpane active" id="tp-gen">
+        <div class="form-row">
+          <div class="sg" style="flex:2"><label class="sl">Nom du profil *</label><input class="si" id="pm-name" placeholder="Survival, PVP 1.8..."/></div>
+          <div class="sg"><label class="sl">Couleur</label>
+            <div style="display:flex;gap:7px;flex-wrap:wrap" id="banner-swatches">
+              <div class="bsw" style="width:36px;height:22px;border-radius:5px;cursor:pointer;border:2px solid #fff;background:linear-gradient(135deg,#0d2a3d,#1a3a1d)" data-c="linear-gradient(135deg,#0d2a3d,#1a3a1d)" onclick="pickBanner(this)"></div>
+              <div class="bsw" style="width:36px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;background:linear-gradient(135deg,#2a0d3d,#1a0d2a)" data-c="linear-gradient(135deg,#2a0d3d,#1a0d2a)" onclick="pickBanner(this)"></div>
+              <div class="bsw" style="width:36px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;background:linear-gradient(135deg,#3d2a0d,#2a1a0d)" data-c="linear-gradient(135deg,#3d2a0d,#2a1a0d)" onclick="pickBanner(this)"></div>
+              <div class="bsw" style="width:36px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;background:linear-gradient(135deg,#3d0d0d,#2a0d1a)" data-c="linear-gradient(135deg,#3d0d0d,#2a0d1a)" onclick="pickBanner(this)"></div>
+              <div class="bsw" style="width:36px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;background:linear-gradient(135deg,#0d1a3d,#0d2a3a)" data-c="linear-gradient(135deg,#0d1a3d,#0d2a3a)" onclick="pickBanner(this)"></div>
+              <div class="bsw" style="width:36px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;background:linear-gradient(135deg,#1a1a1a,#0a0a0a)" data-c="linear-gradient(135deg,#1a1a1a,#0a0a0a)" onclick="pickBanner(this)"></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-row" style="overflow:visible">
+          <div class="sg" style="position:relative;z-index:1000">
+            <label class="sl">Version Minecraft *</label>
+            <input class="si" id="pm-ver-search" placeholder="ex: 1.21.11" autocomplete="off"
+              oninput="filterVerDropdown()" onfocus="openVerDropdown()" onblur="setTimeout(closeVerDropdown,200)"
+              style="cursor:pointer"/>
+            <input type="hidden" id="pm-ver" value=""/>
+            <div id="ver-dropdown" style="
+              display:none;position:fixed;z-index:99999;
+              width:260px;
+              background:var(--bg1);border:1px solid var(--accent);border-radius:10px;
+              max-height:280px;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.8);margin-top:3px">
+              <div id="ver-dropdown-list"></div>
+            </div>
+          </div>
+          <div class="sg"><label class="sl">Type</label>
+            <select class="ssel" id="pm-ver-type" onchange="filterVerDropdown()">
+              <option value="all">Toutes (snapshots incluses)</option>
+              <option value="release">Releases uniquement</option>
+            </select>
+          </div>
+          <div class="sg"><label class="sl">Loader</label>
+            <select class="ssel" id="pm-loader">
+              <option value="vanilla">Vanilla</option><option value="forge">Forge</option>
+              <option value="fabric">Fabric</option><option value="neoforge">NeoForge</option>
+              <option value="quilt">Quilt</option>
+            </select>
+          </div>
+          <div class="sg"><label class="sl">Version loader</label><input class="si" id="pm-lver" placeholder="ex: 0.15.7"/></div>
+        </div>
+      </div>
+
+      <div class="tpane" id="tp-mods-t">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:var(--text2)">Mods installés dans ce profil</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="openAddItemInModal('mod')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Manuel
+            </button>
+            <button class="btn btn-green btn-sm" onclick="goToModsFromProfile('mod')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Parcourir Modrinth
+            </button>
+          </div>
+        </div>
+        <div id="pm-mods-list" class="item-list"></div>
+      </div>
+
+      <div class="tpane" id="tp-rp-t">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:var(--text2)">Resource Packs</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="openAddItemInModal('rp')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Manuel
+            </button>
+            <button class="btn btn-green btn-sm" onclick="goToModsFromProfile('resourcepack')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Parcourir Modrinth
+            </button>
+          </div>
+        </div>
+        <div id="pm-rp-list" class="item-list"></div>
+      </div>
+
+      <div class="tpane" id="tp-sh-t">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;color:var(--text2)">Shaders</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="openAddItemInModal('shader')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Manuel
+            </button>
+            <button class="btn btn-green btn-sm" onclick="goToModsFromProfile('shader')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Parcourir Modrinth
+            </button>
+          </div>
+        </div>
+        <div id="pm-sh-list" class="item-list"></div>
+      </div>
+
+      <div class="tpane" id="tp-java-t">
+        <div class="callout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Ces paramètres écrasent les réglages globaux pour ce profil uniquement.</div>
+        <div class="form-row">
+          <div class="sg"><label class="sl">RAM min (Mo)</label><input class="si" type="number" id="pm-rmin" placeholder="Utilise global" min="256" step="256"/></div>
+          <div class="sg"><label class="sl">RAM max (Mo)</label><input class="si" type="number" id="pm-rmax" placeholder="Utilise global" min="512" step="256"/></div>
+        </div>
+        <div class="sg"><label class="sl">Arguments JVM</label><input class="si" id="pm-jvm" placeholder="-XX:+UseG1GC -XX:MaxGCPauseMillis=50"/></div>
+        <div class="sg"><label class="sl">Dossier de jeu</label><input class="si" id="pm-gamedir" placeholder="AppData/Roaming/Mighty (défaut)"/></div>
+      </div>
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost" onclick="closeOv('ov-profile')">Annuler</button>
+      <button class="btn btn-green" onclick="saveProfile()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Enregistrer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: MOD DETAIL ═══ -->
+<div class="ov" id="ov-mod" onclick="closeOvBg(event,'ov-mod')">
+  <div class="modal">
+    <div class="mhd">
+      <span class="mtitle" id="mod-detail-title">Mod</span>
+      <button class="mx" onclick="closeOv('ov-mod')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="mbody" id="mod-detail-body"></div>
+    <div class="mft">
+      <button class="btn btn-ghost" onclick="closeOv('ov-mod')">Fermer</button>
+      <button class="btn btn-green" id="mod-detail-add-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Ajouter au profil
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: ADD ITEM MANUAL ═══ -->
+<div class="ov" id="ov-item" onclick="closeOvBg(event,'ov-item')">
+  <div class="modal">
+    <div class="mhd">
+      <span class="mtitle" id="item-title">Ajouter</span>
+      <button class="mx" onclick="closeOv('ov-item')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="mbody">
+      <div class="sg"><label class="sl">Nom *</label><input class="si" id="item-name" placeholder="JourneyMap..."/></div>
+      <div class="sg"><label class="sl">Description</label><input class="si" id="item-desc" placeholder="Description..."/></div>
+      <div class="form-row">
+        <div class="sg"><label class="sl">Version</label><input class="si" id="item-ver" placeholder="1.0.0"/></div>
+        <div class="sg"><label class="sl">Auteur</label><input class="si" id="item-author" placeholder="TeamJM"/></div>
+      </div>
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost" onclick="closeOv('ov-item')">Annuler</button>
+      <button class="btn btn-green" onclick="confirmAddItem()">Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONFIRM ═══ -->
+<div class="ov" id="ov-cfm">
+  <div class="cfm-box">
+    <h3 id="cfm-title">Confirmer</h3>
+    <p id="cfm-msg">Êtes-vous sûr ?</p>
+    <div class="cfm-actions">
+      <button class="btn btn-ghost" onclick="closeOv('ov-cfm')">Annuler</button>
+      <button class="btn btn-danger" id="cfm-ok">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: MICROSOFT LOGIN ═══ -->
+<div class="ov" id="ov-mslogin" onclick="closeOvBg(event,'ov-mslogin')">
+  <div class="modal" style="max-width:420px">
+    <div class="mhd">
+      <span class="mtitle" id="ms-modal-title">Connexion Microsoft</span>
+      <button class="mx" onclick="closeOv('ov-mslogin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="mbody" id="ms-modal-body"></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: CHOISIR PROFIL POUR MOD ═══ -->
+<div class="ov" id="ov-pick-profile" onclick="closeOvBg(event,'ov-pick-profile')">
+  <div class="modal" style="max-width:450px">
+    <div class="mhd">
+      <span class="mtitle">Ajouter à un profil</span>
+      <button class="mx" onclick="closeOv('ov-pick-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="mbody">
+      <div style="font-size:12.5px;color:var(--text1)">Ajouter <strong id="pick-mod-name" style="color:var(--text0)"></strong> dans quel profil ?</div>
+      <div class="ppc-grid" id="ppc-grid"></div>
+      <div id="ppc-empty" class="empty" style="display:none;padding:18px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <p>Aucun profil — <span style="color:var(--accent);cursor:pointer;font-weight:700" onclick="closeOv('ov-pick-profile');openCreateProfile()">créez-en un d'abord</span></p>
+      </div>
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost" onclick="closeOv('ov-pick-profile')">Annuler</button>
+      <button class="btn btn-green" onclick="confirmPickProfile()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Ajouter au profil
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── ACCOUNTS DROPDOWN ── -->
+<div class="acct-dd" id="acct-dd" onclick="event.stopPropagation()">
+  <div style="padding:8px 14px 4px;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1.2px;text-transform:uppercase">Comptes</div>
+  <div id="acct-list"></div>
+  <div class="acct-sep"></div>
+  <div class="acct-btn" onclick="closeAcctDD();startMSAuth()">
+    <svg viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+    Ajouter un compte Microsoft
+  </div>
+  <div class="acct-btn" onclick="closeAcctDD();openOfflineModeModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Ajouter compte hors-ligne
+  </div>
+</div>
+</body>
+
+<!-- ═══ JS ═══ -->
+<!-- 1. État global, constantes, utilitaires — doit être chargé EN PREMIER -->
+<script src="js/state.js"></script>
+<!-- 2. Liste des versions Minecraft (fallback) -->
+<script src="js/versions.js"></script>
+<!-- 3. Comptes (ACCOUNTS / MS déclarés ici, avant init) -->
+<script src="js/accounts.js"></script>
+<!-- 4. Page Play, navigation, hero, launch -->
+<script src="js/play.js"></script>
+<!-- 5. Profils — CRUD, import/export, versions dropdown -->
+<script src="js/profiles.js"></script>
+<!-- 6. Modrinth — recherche, grille, détail, picker -->
+<script src="js/modrinth.js"></script>
+<!-- 7. Overlays, confirm, init (doit être EN DERNIER) -->
+<script src="js/init.js"></script>
+
+</body>
+</html>

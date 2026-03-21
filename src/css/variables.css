@@ -1,0 +1,30 @@
+/* ═══════════════════════════════════════════════
+   VARIABLES, RESET & FONTS
+   ═══════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg0:#0e0e10;
+  --bg1:#141416;
+  --bg2:#1a1a1e;
+  --bg3:#202026;
+  --bg4:#28282f;
+  --border:#2a2a32;
+  --border2:#333340;
+  --accent:#4ade80;
+  --accent-dim:rgba(74,222,128,.12);
+  --accent-glow:rgba(74,222,128,.25);
+  --blue:#60a5fa;
+  --red:#f87171;
+  --orange:#fb923c;
+  --text0:#f0f0f5;
+  --text1:#9090a8;
+  --text2:#55556a;
+  --font:'Nunito',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --topbar:54px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);font-family:var(--font)}
