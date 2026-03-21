@@ -1119,7 +1119,7 @@ function navPage(id, el) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id+'-page').classList.add('active');
   if(id==='play') renderPlay();
-  if(id==='mods') { if(!document.querySelector('#mods-grid .mod-card')) searchModrinth(); }
+  if(id==='mods') { if(!document.querySelector('#mods-grid .mod-card')) searchModrinth(); else refreshAllModGridButtons(); }
   if(id==='profiles') renderProfiles();
   if(id==='settings') loadG();
   // Masquer le bandeau si on quitte la page mods sans passer par returnToProfileEdit
@@ -1342,6 +1342,7 @@ function modCardHTML(h, installedIds){
         data-mauthor="${esc(h.author||'')}"
         data-mdesc="${esc((h.description||'').substring(0,120))}"
         data-micon="${h.icon_url||''}"
+        data-mfacet="${modrinthFacet}"
         title="${installed?'Déjà installé':'Ajouter à un profil'}">
         ${installed
           ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`
@@ -1387,7 +1388,7 @@ async function openModDetail(id){
 }
 
 function quickAddMod(id,title,author,desc,icon){
-  openProfilePickForMod({id,name:title,author,desc,icon},null);
+  openProfilePickForMod({id,name:title,author,desc,icon,facet:modrinthFacet},null);
 }
 
 function addModToProfile(mod){
@@ -1397,7 +1398,8 @@ function addModToProfile(mod){
     name: mod.title,
     author: mod.team||'',
     desc: mod.description||'',
-    icon: mod.icon_url||''
+    icon: mod.icon_url||'',
+    facet: modrinthFacet
   }, null);
 }
 
@@ -1750,6 +1752,25 @@ function saveProfile(){
   if(editId){const i=P.findIndex(p=>p.id===editId);if(i>=0){prof.active=P[i].active;P[i]=prof;}}
   else{if(P.length===0)prof.active=true;P.push(prof);}
   saveP();closeOv('ov-profile');renderProfiles();renderPlay();
+  // Mettre à jour tous les boutons de la grille Modrinth
+  refreshAllModGridButtons();
+}
+
+function refreshAllModGridButtons() {
+  const installedIds = new Set(getInstalledModIds());
+  document.querySelectorAll('.mod-add-btn[data-mid]').forEach(btn => {
+    const mid = btn.dataset.mid;
+    const installed = installedIds.has(mid);
+    if(installed && !btn.classList.contains('added')) {
+      btn.classList.add('added');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+      btn.title = 'Déjà installé';
+    } else if(!installed && btn.classList.contains('added')) {
+      btn.classList.remove('added');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+      btn.title = 'Ajouter à un profil';
+    }
+  });
 }
 
 function delProfile(id,e){
@@ -1802,7 +1823,32 @@ function toggleTmp(type,idx){
   arr[idx].enabled=arr[idx].enabled===false;
   renderTmpList(type==='mod'?'pm-mods-list':type==='rp'?'pm-rp-list':'pm-sh-list',arr,type);
 }
-function removeTmp(type,idx,e){if(e)e.stopPropagation();const arr=type==='mod'?tmpMods:type==='rp'?tmpRP:tmpShaders;arr.splice(idx,1);renderTmpList(type==='mod'?'pm-mods-list':type==='rp'?'pm-rp-list':'pm-sh-list',arr,type);}
+function removeTmp(type,idx,e){
+  if(e)e.stopPropagation();
+  const arr=type==='mod'?tmpMods:type==='rp'?tmpRP:tmpShaders;
+  const removed = arr.splice(idx,1)[0];
+  renderTmpList(type==='mod'?'pm-mods-list':type==='rp'?'pm-rp-list':'pm-sh-list',arr,type);
+  // Mettre à jour le bouton dans la grille Modrinth si visible
+  if(removed?.modrinthId) refreshModGridButton(removed.modrinthId, false);
+}
+
+function refreshModGridButton(modrinthId, isInstalled) {
+  document.querySelectorAll(`.mod-add-btn[data-mid="${modrinthId}"]`).forEach(btn => {
+    if(isInstalled) {
+      btn.classList.add('added');
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+      btn.title = 'Déjà installé';
+    } else {
+      // Vérifier si le mod est encore dans un autre profil
+      const stillInstalled = getInstalledModIds().includes(modrinthId);
+      if(!stillInstalled) {
+        btn.classList.remove('added');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+        btn.title = 'Ajouter à un profil';
+      }
+    }
+  });
+}
 
 function goToModsFromProfile(facet) {
   // Sauvegarder l'état du profil en cours pour y revenir
@@ -2446,11 +2492,25 @@ function selectPPC(id){
 function confirmPickProfile(){
   if(!pendingMod||!pickedPid)return;
   const p=P.find(x=>x.id===pickedPid); if(!p)return;
-  p.mods=p.mods||[];
-  if(!p.mods.find(m=>m.modrinthId===pendingMod.id)){
-    p.mods.push({name:pendingMod.name,author:pendingMod.author||'',desc:pendingMod.desc||'',icon:pendingMod.icon||'',modrinthId:pendingMod.id,enabled:true});
+
+  // Déterminer le bon tableau selon le type Modrinth
+  const facet = pendingMod.facet || modrinthFacet || 'mod';
+  let targetArr, arrKey;
+  if(facet === 'resourcepack') { p.rp=p.rp||[]; targetArr=p.rp; arrKey='rp'; }
+  else if(facet === 'shader')  { p.shaders=p.shaders||[]; targetArr=p.shaders; arrKey='shaders'; }
+  else                         { p.mods=p.mods||[]; targetArr=p.mods; arrKey='mods'; }
+
+  if(!targetArr.find(m=>m.modrinthId===pendingMod.id)){
+    targetArr.push({
+      name:pendingMod.name,
+      author:pendingMod.author||'',
+      desc:pendingMod.desc||'',
+      icon:pendingMod.icon||'',
+      modrinthId:pendingMod.id,
+      enabled:true
+    });
     saveP();
-    // Mark the + button as added in the mods grid
+    // Mettre à jour le bouton + dans la grille
     document.querySelectorAll(`.mod-add-btn[data-mid="${pendingMod.id}"]`).forEach(btn => {
       btn.classList.add('added');
       btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
@@ -2528,13 +2588,14 @@ document.addEventListener('click', function(e) {
   const btn = e.target.closest('.mod-add-btn');
   if (!btn || btn.classList.contains('added')) return;
   e.stopPropagation();
-  const mid   = btn.dataset.mid;
-  const mname = btn.dataset.mname;
+  const mid     = btn.dataset.mid;
+  const mname   = btn.dataset.mname;
   const mauthor = btn.dataset.mauthor || '';
   const mdesc   = btn.dataset.mdesc   || '';
   const micon   = btn.dataset.micon   || '';
+  const mfacet  = btn.dataset.mfacet  || modrinthFacet || 'mod';
   if (mid && mname) {
-    openProfilePickForMod({id:mid, name:mname, author:mauthor, desc:mdesc, icon:micon}, null);
+    openProfilePickForMod({id:mid, name:mname, author:mauthor, desc:mdesc, icon:micon, facet:mfacet}, null);
   }
 });
 
