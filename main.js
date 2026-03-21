@@ -36,15 +36,8 @@ ipcMain.on('install-update', () => {
 })
 
 // ── OPTIMISATION RAM ─────────────────────────────────────────────────
-// Limiter la mémoire V8 du process principal
 app.commandLine.appendSwitch('js-flags', '--max-old-space-size=128')
-// Désactiver le rendu GPU inutile (économise ~30-50Mo)
-app.commandLine.appendSwitch('disable-gpu')
-app.commandLine.appendSwitch('disable-software-rasterizer')
-// Réduire la mémoire du renderer
-app.commandLine.appendSwitch('renderer-process-limit', '1')
 app.commandLine.appendSwitch('disable-background-networking')
-// Pas de logs de crash inutiles
 app.commandLine.appendSwitch('disable-crash-reporter')
 
 // ═══════════════════════════════════════
@@ -714,15 +707,252 @@ async function downloadVersionJar(version, vJson, destJar) {
   console.log(`[Version] Jar téléchargé : ${version}`)
 }
 
+// ── Installe le loader si nécessaire et retourne la version à lancer ─
+async function ensureLoader(loader, mcVersion, loaderVersion, mcDir, win) {
+  if (loader === 'vanilla') return mcVersion
+
+  if (loader === 'fabric') {
+    const versionsDir = path2.join(mcDir, 'versions')
+    if (fs.existsSync(versionsDir)) {
+      const existing = fs.readdirSync(versionsDir)
+      const fabricVer = existing.find(v =>
+        v.includes('fabric-loader') && v.includes(mcVersion)
+      )
+      if (fabricVer) {
+        // Vérifier que les libs sont bien là
+        const fabricJsonPath = path2.join(mcDir, 'versions', fabricVer, `${fabricVer}.json`)
+        if (fs.existsSync(fabricJsonPath)) {
+          const fabricManifest = JSON.parse(fs.readFileSync(fabricJsonPath, 'utf8'))
+          await downloadMissingLibraries(fabricManifest, path2.join(mcDir, 'libraries'))
+          console.log('[Loader] Fabric déjà installé :', fabricVer)
+          return fabricVer
+        }
+      }
+    }
+
+    win?.webContents.send('launch-progress', { step: 'loader', msg: 'Installation de Fabric...', pct: 18 })
+    try {
+      const loaders = await httpsGetJSON(
+        `https://meta.fabricmc.net/v2/versions/loader/${mcVersion}`
+      )
+      if (!loaders || !loaders.length) throw new Error('Aucun loader Fabric pour ' + mcVersion)
+
+      const target = loaderVersion
+        ? loaders.find(l => l.loader?.version === loaderVersion) || loaders[0]
+        : loaders[0]
+
+      const fabricVersion = `fabric-loader-${target.loader.version}-${mcVersion}`
+      const fabricDir = path2.join(mcDir, 'versions', fabricVersion)
+      if (!fs.existsSync(fabricDir)) fs.mkdirSync(fabricDir, { recursive: true })
+
+      // Telecharger le JSON du profil Fabric
+      const profileUrl = `https://meta.fabricmc.net/v2/versions/loader/${mcVersion}/${target.loader.version}/profile/json`
+      const fabricJsonPath = path2.join(fabricDir, `${fabricVersion}.json`)
+      if (!fs.existsSync(fabricJsonPath)) {
+        await httpsDownloadFile(profileUrl, fabricJsonPath)
+      }
+
+      // Lire le manifest et telecharger TOUTES les librairies Fabric
+      const fabricManifest = JSON.parse(fs.readFileSync(fabricJsonPath, 'utf8'))
+      const libDir = path2.join(mcDir, 'libraries')
+      win?.webContents.send('launch-progress', { step: 'loader', msg: 'Telechargement des librairies Fabric...', pct: 20 })
+      await downloadMissingLibraries(fabricManifest, libDir)
+
+      // Fabric utilise le jar vanilla - copier avec le nom fabric
+      const vanillaJar = path2.join(mcDir, 'versions', mcVersion, `${mcVersion}.jar`)
+      const fabricJar  = path2.join(fabricDir, `${fabricVersion}.jar`)
+      if (!fs.existsSync(fabricJar)) {
+        if (fs.existsSync(vanillaJar)) {
+          fs.copyFileSync(vanillaJar, fabricJar)
+        } else {
+          const vanillaDir = path2.join(mcDir, 'versions', mcVersion)
+          const vanillaJson = path2.join(vanillaDir, `${mcVersion}.json`)
+          if (!fs.existsSync(vanillaDir)) fs.mkdirSync(vanillaDir, { recursive: true })
+          if (!fs.existsSync(vanillaJson)) await downloadVersionJson(mcVersion, vanillaJson)
+          await downloadVersionJar(mcVersion, vanillaJson, vanillaJar)
+          fs.copyFileSync(vanillaJar, fabricJar)
+        }
+      }
+
+      win?.webContents.send('launch-progress', { step: 'loader', msg: `Fabric ${target.loader.version} pret`, pct: 25 })
+      console.log('[Loader] Fabric installe :', fabricVersion)
+      return fabricVersion
+
+    } catch(e) {
+      console.warn('[Loader] Fabric install failed:', e.message)
+      win?.webContents.send('launch-progress', { step: 'loader', msg: `Fabric echoue: ${e.message}`, pct: 22 })
+      return mcVersion
+    }
+  }
+
+  // Pour Forge/NeoForge/Quilt — chercher version existante
+  const versionsDir = path2.join(mcDir, 'versions')
+  if (fs.existsSync(versionsDir)) {
+    const existing = fs.readdirSync(versionsDir)
+    const loaderVer = existing.find(v =>
+      v.toLowerCase().includes(loader) && v.includes(mcVersion)
+    )
+    if (loaderVer) return loaderVer
+  }
+
+  win?.webContents.send('launch-progress', { step: 'loader', msg: `${loader} non installe - vanilla`, pct: 22 })
+  return mcVersion
+}
+
+
 async function launchMinecraft(profile, settings) {
   const mcDir   = profile.gameDir || getDefaultMCDir()
   const version = profile.version
   const ramMin  = profile.ramMin || settings.ramMin || 512
   const ramMax  = profile.ramMax || settings.ramMax || 2048
 
-  const versionDir = path2.join(mcDir, 'versions', version)
-  const vJar       = path2.join(versionDir, `${version}.jar`)
-  const vJson      = path2.join(versionDir, `${version}.json`)
+  // ── Créer les dossiers du profil ─────────────────────────────────
+  const profileDir    = path2.join(mcDir, 'profiles', profile.id)
+  const modsDir       = path2.join(profileDir, 'mods')
+  const rpDir         = path2.join(profileDir, 'resourcepacks')
+  const shadersDir    = path2.join(profileDir, 'shaderpacks')
+  const savesDir      = path2.join(profileDir, 'saves')
+  const screenshotDir = path2.join(profileDir, 'screenshots')
+
+  for (const d of [modsDir, rpDir, shadersDir, savesDir, screenshotDir]) {
+    if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true })
+  }
+
+  // ── Télécharger les mods Modrinth + leurs dépendances ────────────
+  const mods = (profile.mods || []).filter(m => m.enabled !== false)
+  if (mods.length > 0) {
+    mainWindow?.webContents.send('launch-progress', { step: 'mods', msg: `Vérification des mods…`, pct: 2 })
+    const loader = (profile.loader || 'fabric').toLowerCase()
+
+    // Télécharger un mod par son ID Modrinth + résoudre ses dépendances récursivement
+    const downloadedIds = new Set() // éviter les doublons et boucles infinies
+
+    async function downloadMod(modrinthId, modName) {
+      if (downloadedIds.has(modrinthId)) return
+      downloadedIds.add(modrinthId)
+
+      try {
+        const params = new URLSearchParams()
+        params.append('game_versions', JSON.stringify([version]))
+        if (loader !== 'vanilla') params.append('loaders', JSON.stringify([loader]))
+
+        let versionsRes = await httpsGetJSON(
+          `https://api.modrinth.com/v2/project/${modrinthId}/version?${params.toString()}`
+        )
+
+        // Fallback sans filtre loader
+        if (!versionsRes?.length) {
+          versionsRes = await httpsGetJSON(
+            `https://api.modrinth.com/v2/project/${modrinthId}/version?game_versions=${encodeURIComponent(JSON.stringify([version]))}`
+          )
+        }
+
+        const targetVer = versionsRes?.[0]
+        if (!targetVer) {
+          console.warn(`[Mods] Aucune version compatible : ${modName} (MC ${version})`)
+          return
+        }
+
+        const file = targetVer.files?.find(f => f.primary) || targetVer.files?.[0]
+        if (!file) return
+
+        const destJar = path2.join(modsDir, file.filename)
+        if (!fs.existsSync(destJar)) {
+          await httpsDownloadFile(file.url, destJar)
+          console.log(`[Mods] ✓ ${modName} → ${file.filename}`)
+        } else {
+          console.log(`[Mods] Déjà présent : ${file.filename}`)
+        }
+
+        // ── Résoudre les dépendances ──────────────────────────────
+        const deps = targetVer.dependencies || []
+        for (const dep of deps) {
+          // dependency_type: "required" = obligatoire, "optional" = facultatif
+          if (dep.dependency_type !== 'required') continue
+          if (!dep.project_id) continue
+          if (downloadedIds.has(dep.project_id)) continue
+
+          console.log(`[Mods] Dépendance requise : ${dep.project_id} pour ${modName}`)
+          mainWindow?.webContents.send('launch-progress', {
+            step: 'mods',
+            msg: `Dépendance : ${dep.project_id}…`,
+            pct: 10
+          })
+
+          // Récupérer le nom du projet dépendant
+          try {
+            const depProject = await httpsGetJSON(`https://api.modrinth.com/v2/project/${dep.project_id}`)
+            await downloadMod(dep.project_id, depProject.title || dep.project_id)
+          } catch(e) {
+            console.warn(`[Mods] Dépendance échouée : ${dep.project_id} — ${e.message}`)
+          }
+        }
+
+      } catch(e) {
+        console.warn(`[Mods] ✗ ${modName} : ${e.message}`)
+      }
+    }
+
+    let done = 0
+    for (const mod of mods) {
+      done++
+      const pct = Math.round((done / mods.length) * 15)
+      mainWindow?.webContents.send('launch-progress', { step: 'mods', msg: `Mods : ${done}/${mods.length} — ${mod.name}…`, pct })
+      if (mod.modrinthId) await downloadMod(mod.modrinthId, mod.name)
+    }
+
+    mainWindow?.webContents.send('launch-progress', { step: 'mods', msg: `Mods prêts ✓`, pct: 15 })
+  }
+
+  // ── Resource Packs ────────────────────────────────────────────────
+  const rps = (profile.rp || []).filter(r => r.enabled !== false)
+  for (const rp of rps) {
+    if (!rp.modrinthId) continue
+    try {
+      const versionsRes = await httpsGetJSON(
+        `https://api.modrinth.com/v2/project/${rp.modrinthId}/version`
+      )
+      const file = versionsRes?.[0]?.files?.find(f => f.primary) || versionsRes?.[0]?.files?.[0]
+      if (!file) continue
+      const dest = path2.join(rpDir, file.filename)
+      if (!fs.existsSync(dest)) {
+        await httpsDownloadFile(file.url, dest)
+        console.log(`[RP] ✓ ${rp.name} → ${file.filename}`)
+      }
+    } catch(e) { console.warn(`[RP] ✗ ${rp.name} : ${e.message}`) }
+  }
+
+  // ── Shaders ───────────────────────────────────────────────────────
+  const shaders = (profile.shaders || []).filter(s => s.enabled !== false)
+  for (const shader of shaders) {
+    if (!shader.modrinthId) continue
+    try {
+      const versionsRes = await httpsGetJSON(
+        `https://api.modrinth.com/v2/project/${shader.modrinthId}/version`
+      )
+      const file = versionsRes?.[0]?.files?.find(f => f.primary) || versionsRes?.[0]?.files?.[0]
+      if (!file) continue
+      const dest = path2.join(shadersDir, file.filename)
+      if (!fs.existsSync(dest)) {
+        await httpsDownloadFile(file.url, dest)
+        console.log(`[Shader] ✓ ${shader.name} → ${file.filename}`)
+      }
+    } catch(e) { console.warn(`[Shader] ✗ ${shader.name} : ${e.message}`) }
+  }
+
+  // ── Pointer le gameDir sur le dossier du profil ───────────────────
+  const effectiveMcDir = profileDir
+
+  // ── Vérifier/installer le loader (Fabric, Forge, etc.) ───────────
+  const loader = (profile.loader || 'vanilla').toLowerCase()
+  const lver   = profile.lver || ''
+  const actualVersion = await ensureLoader(loader, version, lver, mcDir, mainWindow)
+  // actualVersion = version modifiée si loader installé (ex: "fabric-loader-0.15.7-1.21.1")
+  const launchVersion = actualVersion || version
+
+  const versionDir = path2.join(mcDir, 'versions', launchVersion)
+  const vJar       = path2.join(versionDir, `${launchVersion}.jar`)
+  const vJson      = path2.join(versionDir, `${launchVersion}.json`)
 
   // ── Téléchargement automatique de la version si absente ──────────
   if (!fs.existsSync(versionDir)) fs.mkdirSync(versionDir, { recursive: true })
@@ -736,14 +966,61 @@ async function launchMinecraft(profile, settings) {
     await downloadVersionJar(version, vJson, vJar)
   }
 
-  const manifest = JSON.parse(fs.readFileSync(vJson, 'utf8'))
-  const libDir   = path2.join(mcDir, 'libraries')
+  // ── Charger et merger les manifests (Fabric hérite de vanilla) ────
+  let manifest = JSON.parse(fs.readFileSync(vJson, 'utf8'))
+
+  // Si le manifest hérite d'un autre (ex: Fabric hérite de 1.21.4)
+  if (manifest.inheritsFrom) {
+    const parentVersion = manifest.inheritsFrom
+    const parentDir  = path2.join(mcDir, 'versions', parentVersion)
+    const parentJson = path2.join(parentDir, `${parentVersion}.json`)
+
+    if (!fs.existsSync(parentDir)) fs.mkdirSync(parentDir, { recursive: true })
+    if (!fs.existsSync(parentJson)) {
+      mainWindow?.webContents.send('launch-progress', { step: 'version', msg: `Téléchargement manifeste ${parentVersion}…`, pct: 28 })
+      await downloadVersionJson(parentVersion, parentJson)
+    }
+
+    // S'assurer que le jar vanilla est là
+    const parentJar = path2.join(parentDir, `${parentVersion}.jar`)
+    if (!fs.existsSync(parentJar)) {
+      mainWindow?.webContents.send('launch-progress', { step: 'version', msg: `Téléchargement Minecraft ${parentVersion}…`, pct: 30 })
+      await downloadVersionJar(parentVersion, parentJson, parentJar)
+    }
+
+    // Copier le jar vanilla sous le nom fabric si pas déjà fait
+    if (!fs.existsSync(vJar)) fs.copyFileSync(parentJar, vJar)
+
+    const parentManifest = JSON.parse(fs.readFileSync(parentJson, 'utf8'))
+
+    // Merger : Fabric par-dessus vanilla
+    manifest = {
+      ...parentManifest,
+      ...manifest,
+      libraries: [...(manifest.libraries || []), ...(parentManifest.libraries || [])],
+      arguments: {
+        jvm:  [...(manifest.arguments?.jvm  || []), ...(parentManifest.arguments?.jvm  || [])],
+        game: [...(manifest.arguments?.game || []), ...(parentManifest.arguments?.game || [])],
+      },
+      // Garder le mainClass de Fabric
+      mainClass: manifest.mainClass || parentManifest.mainClass,
+      // Garder assetIndex du parent
+      assetIndex: manifest.assetIndex || parentManifest.assetIndex,
+      assets: manifest.assets || parentManifest.assets,
+      javaVersion: manifest.javaVersion || parentManifest.javaVersion,
+    }
+
+    // Télécharger les libs du parent aussi
+    await downloadMissingLibraries(parentManifest, path2.join(mcDir, 'libraries'))
+  }
+
+  const libDir = path2.join(mcDir, 'libraries')
 
   // ── Download missing libraries ───────────────────────────────────
   await downloadMissingLibraries(manifest, libDir)
 
   // ── Natives directory ─────────────────────────────────────────────
-  let nativesDir = path2.join(versionDir, `${version}-natives`)
+  let nativesDir = path2.join(versionDir, `${launchVersion}-natives`)
   if (!fs.existsSync(nativesDir)) {
     nativesDir = path2.join(versionDir, 'natives')
     if (!fs.existsSync(nativesDir)) fs.mkdirSync(nativesDir, { recursive: true })
@@ -751,13 +1028,28 @@ async function launchMinecraft(profile, settings) {
   }
 
   // ── Classpath ─────────────────────────────────────────────────────
-  const cp = buildCP(manifest, libDir, vJar)
+  // Pour Fabric : on a besoin du jar vanilla ET du jar fabric dans le CP
+  const vanillaJarForCP = path2.join(mcDir, 'versions', version, `${version}.jar`)
+  const extraJars = []
+  if (launchVersion !== version) {
+    // S'assurer que le jar vanilla est bien téléchargé
+    if (!fs.existsSync(vanillaJarForCP)) {
+      const vanillaDir  = path2.join(mcDir, 'versions', version)
+      const vanillaJson = path2.join(vanillaDir, `${version}.json`)
+      if (!fs.existsSync(vanillaDir)) fs.mkdirSync(vanillaDir, { recursive: true })
+      if (!fs.existsSync(vanillaJson)) await downloadVersionJson(version, vanillaJson)
+      mainWindow?.webContents.send('launch-progress', { step: 'version', msg: `Téléchargement Minecraft ${version}…`, pct: 35 })
+      await downloadVersionJar(version, vanillaJson, vanillaJarForCP)
+    }
+    extraJars.push(vanillaJarForCP)
+  }
+  const cp = buildCP(manifest, libDir, vJar, extraJars)
 
   // ── Template vars ─────────────────────────────────────────────────
   const username    = settings.username || 'Player'
   const uuid        = settings.uuid    || genUUID(username)
   const accessToken = settings.accessToken || '0'
-  const assetsDir   = path2.join(mcDir, 'assets')
+  const assetsDir   = path2.join(mcDir, 'assets')  // assets partagés
   const assetIndex  = manifest.assetIndex?.id || version
 
   const vars = {
@@ -765,13 +1057,13 @@ async function launchMinecraft(profile, settings) {
     auth_session:       accessToken,
     auth_access_token:  accessToken,
     auth_uuid:          uuid,
-    auth_xuid:          '',           // not needed for offline / MS auth already done
-    clientid:           '',           // not needed
+    auth_xuid:          '',
+    clientid:           '',
     user_type:          settings.premium ? 'msa' : 'offline',
     user_properties:    '{}',
-    version_name:       version,
+    version_name:       launchVersion,
     version_type:       manifest.type || 'release',
-    game_directory:     mcDir,
+    game_directory:     effectiveMcDir,
     assets_root:        assetsDir,
     assets_index_name:  assetIndex,
     game_assets:        assetsDir,
@@ -779,10 +1071,12 @@ async function launchMinecraft(profile, settings) {
     launcher_name:      'mighty-launcher',
     launcher_version:   '1.0',
     classpath:          cp,
-    // Resolution vars — omit by leaving empty so those args are filtered out
+    // Fabric utilise ${launcher_main_class} pour DFabricMcEmu
+    launcher_main_class: manifest.inheritsFrom
+      ? (JSON.parse(fs.readFileSync(path2.join(mcDir, 'versions', manifest.inheritsFrom, `${manifest.inheritsFrom}.json`), 'utf8')).mainClass || 'net.minecraft.client.main.Main')
+      : 'net.minecraft.client.main.Main',
     resolution_width:   '',
     resolution_height:  '',
-    // QuickPlay vars — empty so those args are filtered out
     quickPlayPath:         '',
     quickPlaySingleplayer: '',
     quickPlayMultiplayer:  '',
@@ -791,27 +1085,41 @@ async function launchMinecraft(profile, settings) {
 
   // ── JVM args from manifest ────────────────────────────────────────
   const jvmArgs = []
+
+  // Toujours ajouter le chemin des natives en premier
+  jvmArgs.push(`-Djava.library.path=${nativesDir}`)
+  jvmArgs.push(`-Dminecraft.launcher.brand=mighty-launcher`)
+  jvmArgs.push(`-Dminecraft.launcher.version=1.0`)
+
   if (manifest.arguments?.jvm) {
+    let skipNext = false
     for (const a of manifest.arguments.jvm) {
       if (typeof a === 'string') {
         const resolved = sub(a, vars)
-        // Skip args that reference classpath — we add -cp ourselves below
-        if (!resolved.includes('-cp') && !resolved.includes('${classpath}') && resolved !== cp)
+        // Skip classpath args — on gère -cp manuellement
+        if (resolved === '-cp' || resolved === '-classpath') { skipNext = true; continue }
+        if (skipNext) { skipNext = false; continue } // skip la valeur après -cp
+        if (resolved.includes('${classpath}') || resolved === cp) continue
+        if (resolved.includes('-Djava.library.path')) continue
+        if (resolved.includes('-Dminecraft.launcher.brand')) continue
+        if (resolved.includes('-Dminecraft.launcher.version')) continue
+        // Fix Fabric: -DFabricMcEmu= doit rester collé à sa valeur
+        if (resolved.startsWith('-DFabricMcEmu=')) {
+          // Garder tel quel — c'est un seul arg JVM avec la valeur collée
           jvmArgs.push(resolved)
+        } else {
+          jvmArgs.push(resolved)
+        }
       } else if (a && typeof a === 'object' && a.rules && isAllowed(a.rules)) {
         const vals = Array.isArray(a.value) ? a.value : [a.value]
         vals.forEach(v => {
           const resolved = sub(v, vars)
-          if (!resolved.includes('${classpath}') && resolved !== cp)
+          if (resolved === '-cp' || resolved === '-classpath') return
+          if (!resolved.includes('${classpath}') && resolved !== cp && !resolved.includes('-Djava.library.path'))
             jvmArgs.push(resolved)
         })
       }
     }
-  } else {
-    // Old format (pre-1.13)
-    jvmArgs.push(`-Djava.library.path=${nativesDir}`)
-    jvmArgs.push('-Dfml.ignoreInvalidMinecraftCertificates=true')
-    jvmArgs.push('-Dfml.ignorePatchDiscrepancies=true')
   }
 
   // Memory
@@ -912,7 +1220,7 @@ async function launchMinecraft(profile, settings) {
   // ── Spawn ────────────────────────────────────────────────────────
   return new Promise((resolve, reject) => {
     const mc = spawn(javaPath, fullArgs, {
-      cwd:   mcDir,
+      cwd:   effectiveMcDir,
       stdio: ['ignore', 'pipe', 'pipe'],
     })
 
@@ -1118,21 +1426,56 @@ function guessRuntimeComponent(mcVersion) {
   return 'jre-legacy'
 }
 
-// ── Download missing libraries from Mojang ────────────────────────
+// ── Download missing libraries (Mojang + Fabric Maven format) ────────
 async function downloadMissingLibraries(manifest, libDir) {
   const missing = []
+
+  // Repos Maven pour les libs Fabric
+  const MAVEN_REPOS = [
+    'https://maven.fabricmc.net/',
+    'https://maven.minecraftforge.net/',
+    'https://repo1.maven.org/maven2/',
+    'https://libraries.minecraft.net/',
+  ]
+
+  function mavenPathFromName(name) {
+    // format: group:artifact:version[:classifier]
+    const parts = name.split(':')
+    if (parts.length < 3) return null
+    const [group, artifact, version, classifier] = parts
+    const groupPath = group.replace(/\./g, '/')
+    const fileName = classifier
+      ? `${artifact}-${version}-${classifier}.jar`
+      : `${artifact}-${version}.jar`
+    return `${groupPath}/${artifact}/${version}/${fileName}`
+  }
 
   for (const lib of manifest.libraries || []) {
     if (lib.rules && !isAllowed(lib.rules)) continue
 
-    // Only download libs that have a downloads.artifact.url
-    const artifact = lib.downloads?.artifact
-    if (!artifact?.url || !artifact?.path) continue
-
-    const dest = path2.join(libDir, artifact.path.replace(/\//g, path2.sep))
-    if (fs.existsSync(dest)) continue  // already present
-
-    missing.push({ url: artifact.url, dest, name: lib.name || artifact.path })
+    if (lib.downloads?.artifact?.url && lib.downloads?.artifact?.path) {
+      // Format standard Mojang
+      const dest = path2.join(libDir, lib.downloads.artifact.path.replace(/\//g, path2.sep))
+      if (!fs.existsSync(dest)) {
+        missing.push({ url: lib.downloads.artifact.url, dest, name: lib.name || lib.downloads.artifact.path })
+      }
+    } else if (lib.name) {
+      // Format Maven/Fabric — construire le chemin depuis le nom
+      const mavenPath = mavenPathFromName(lib.name)
+      if (!mavenPath) continue
+      const dest = path2.join(libDir, mavenPath.replace(/\//g, path2.sep))
+      if (!fs.existsSync(dest)) {
+        // Si lib.url est défini (format Fabric), c'est la base Maven à utiliser
+        if (lib.url) {
+          const directUrl = lib.url.endsWith('/') ? lib.url + mavenPath : lib.url + '/' + mavenPath
+          const fallbackUrls = MAVEN_REPOS.map(r => r + mavenPath)
+          missing.push({ urls: [directUrl, ...fallbackUrls], dest, name: lib.name })
+        } else {
+          const urls = MAVEN_REPOS.map(r => r + mavenPath)
+          missing.push({ urls, dest, name: lib.name })
+        }
+      }
+    }
   }
 
   if (missing.length === 0) {
@@ -1153,11 +1496,28 @@ async function downloadMissingLibraries(manifest, libDir) {
 
   async function worker() {
     while (queue.length > 0) {
-      const { url, dest, name } = queue.shift()
+      const { url, urls, dest, name } = queue.shift()
       try {
         const dir = path2.dirname(dest)
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-        await httpsDownloadFile(url, dest)
+
+        if (url) {
+          // URL directe (format Mojang)
+          await httpsDownloadFile(url, dest)
+        } else if (urls) {
+          // Essayer les repos Maven dans l'ordre
+          let downloaded = false
+          for (const u of urls) {
+            try {
+              await httpsDownloadFile(u, dest)
+              downloaded = true
+              break
+            } catch(e) {
+              if (fs.existsSync(dest)) fs.unlinkSync(dest) // nettoyer fichier partiel
+            }
+          }
+          if (!downloaded) throw new Error('Aucun repo Maven disponible')
+        }
         console.log(`[Libs] ✓ ${name}`)
       } catch(e) {
         console.warn(`[Libs] ✗ Failed: ${name} — ${e.message}`)
@@ -1184,34 +1544,56 @@ async function downloadMissingLibraries(manifest, libDir) {
   console.log(`[Libs] Done — ${done} libraries downloaded`)
 }
 
-function buildCP(manifest, libDir, jar) {
+function buildCP(manifest, libDir, jar, extraJars = []) {
   const sep  = process.platform === 'win32' ? ';' : ':'
   const jars = [jar]
+  const seen = new Set([jar])
+
+  // Ajouter les jars supplémentaires (ex: jar vanilla quand on lance Fabric)
+  for (const ej of extraJars) {
+    if (ej && !seen.has(ej)) {
+      jars.push(ej)
+      seen.add(ej)
+    }
+  }
+
   for (const lib of manifest.libraries || []) {
     if (lib.rules && !isAllowed(lib.rules)) continue
+
+    let found = false
 
     // Method 1: downloads.artifact.path (standard modern format)
     const p = lib.downloads?.artifact?.path
     if (p) {
       const full = path2.join(libDir, p.replace(/\//g, path2.sep))
-      if (fs.existsSync(full)) { jars.push(full); continue }
+      if (fs.existsSync(full) && !seen.has(full)) {
+        jars.push(full)
+        seen.add(full)
+        found = true
+      }
     }
 
-    // Method 2: derive path from lib.name (group:artifact:version)
-    // e.g. "com.mojang:logging:1.2.7" -> com/mojang/logging/1.2.7/logging-1.2.7.jar
-    if (lib.name) {
+    if (!found && lib.name) {
+      // Method 2: derive path from lib.name (group:artifact:version[:classifier])
       const parts = lib.name.split(':')
       if (parts.length >= 3) {
-        const [group, artifact, version, ...rest] = parts
+        const [group, artifact, version, classifier] = parts
         const groupPath = group.replace(/\./g, path2.sep)
-        const classifier = rest.length ? `-${rest.join('-')}` : ''
-        const fileName = `${artifact}-${version}${classifier}.jar`
+        const classifierSuffix = classifier ? `-${classifier}` : ''
+        const fileName = `${artifact}-${version}${classifierSuffix}.jar`
         const full = path2.join(libDir, groupPath, artifact, version, fileName)
-        if (fs.existsSync(full)) { jars.push(full); continue }
-        console.warn(`[CP] Missing library: ${lib.name} -> ${full}`)
+        if (fs.existsSync(full) && !seen.has(full)) {
+          jars.push(full)
+          seen.add(full)
+          found = true
+        } else if (!found) {
+          console.warn(`[CP] Missing: ${lib.name} -> ${full}`)
+        }
       }
     }
   }
+
+  console.log(`[CP] Classpath: ${jars.length} jars`)
   return jars.join(sep)
 }
 
