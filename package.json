@@ -1,18 +1,24 @@
 {
   "name": "mighty-client",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Mighty Minecraft Launcher",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "build:win": "electron-builder --win",
-    "build:mac": "electron-builder --mac",
-    "build:linux": "electron-builder --linux"
+    "build:win": "electron-builder --win --publish always",
+    "build:mac": "electron-builder --mac --publish always",
+    "build:linux": "electron-builder --linux --publish always",
+    "build:all": "electron-builder --win --mac --linux --publish always"
   },
   "build": {
     "appId": "net.mightyclient.app",
     "productName": "Mighty Client",
+    "publish": {
+      "provider": "github",
+      "owner": "Nyxia57",
+      "repo": "mighty-launcher"
+    },
     "directories": {
       "output": "dist"
     },
@@ -40,6 +46,7 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
-    "discord-rpc": "^4.0.1"
+    "discord-rpc": "^4.0.1",
+    "electron-updater": "^6.8.3"
   }
 }

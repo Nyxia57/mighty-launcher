@@ -13,6 +13,23 @@ const http  = require('http');
 const { execFile, spawn } = require('child_process');
 const crypto = require('crypto');
 const dns    = require('dns');
+const { autoUpdater } = require('electron-updater');
+
+// ── AUTO-UPDATER ─────────────────────────────────────────────
+autoUpdater.autoDownload = true;        // télécharge en arrière-plan
+autoUpdater.autoInstallOnAppQuit = true; // installe quand l'app se ferme
+
+autoUpdater.on('update-available', () => {
+    if (mainWindow) mainWindow.webContents.send('update-available');
+});
+
+autoUpdater.on('update-downloaded', () => {
+    if (mainWindow) mainWindow.webContents.send('update-downloaded');
+});
+
+autoUpdater.on('error', (err) => {
+    console.error('[AutoUpdater] Erreur :', err.message);
+});
 
 // ── DISCORD RICH PRESENCE ────────────────────────────────────
 // Client ID de l'application Discord (https://discord.com/developers/applications)
@@ -403,6 +420,8 @@ app.whenReady().then(() => {
     migrateConfig();
     createWindow();
     app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
+    // Vérifie les mises à jour 3 secondes après le démarrage
+    setTimeout(() => autoUpdater.checkForUpdatesAndNotify(), 3000);
 });
 
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
