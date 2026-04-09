@@ -1,0 +1,153 @@
+/* ============================================================
+   06-modals-overlays.css
+   Modales, overlays,
+   profils et page support
+   ============================================================ */
+
+/* ══════════════════════════════
+   MODAL OVERLAY GÉNÉRIQUE
+══════════════════════════════ */
+.modal-overlay {
+    position: absolute; inset: 0; z-index: 400;
+    background: rgba(0,0,0,0.65); border-radius: 14px;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(3px);
+    animation: fadeIn 0.15s ease both;
+}
+.modal-overlay.open, .modal-overlay.show { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-box {
+    background: #252529; border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px; width: 520px; max-height: 80%;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.8);
+    animation: slideUp 0.2s ease both;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;
+}
+.modal-title { font-size: 15px; font-weight: 700; color: #f0f0f2; }
+.modal-close { background: none; border: none; color: #606068; cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 5px; border-radius: 4px; transition: color 0.15s; }
+.modal-close:hover { color: #f0f0f2; }
+.modal-body { padding: 16px 18px; overflow-y: auto; flex: 1; }
+.modal-footer { padding: 12px 18px; border-top: 1px solid rgba(255,255,255,0.07); display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
+.modal-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+.modal-input { width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 7px; padding: 9px 12px; color: #f0f0f2; font-family: 'Inter',sans-serif; font-size: 13px; outline: none; transition: border-color 0.15s; }
+.modal-input:focus { border-color: rgba(139,92,246,0.6); }
+.modal-select { width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 7px; padding: 9px 12px; color: #f0f0f2; font-family: 'Inter',sans-serif; font-size: 13px; outline: none; cursor: pointer; }
+.modal-row { margin-bottom: 14px; }
+.modal-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.modal-tab-bar { display: flex; gap: 2px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.07); padding-bottom: 10px; }
+.modal-tab { background: none; border: none; color: var(--text-muted); font-family: 'Inter',sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 10px; border-radius: 5px; cursor: pointer; transition: all 0.15s; }
+.modal-tab.active { background: rgba(255,255,255,0.07); color: #f0f0f2; }
+.icon-grid { display: flex; gap: 6px; flex-wrap: wrap; }
+.icon-opt { width: 36px; height: 36px; border-radius: 8px; border: 2px solid var(--border); background: var(--bg-card); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.15s; }
+.icon-opt:hover { border-color: var(--border-md); background: var(--bg-hover); }
+.icon-opt.selected { border-color: var(--accent); background: rgba(139,92,246,0.12); }
+.color-grid { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 4px; }
+.color-opt { width: 26px; height: 26px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+.color-opt:hover { transform: scale(1.1); }
+.color-opt.selected { border-color: #fff; box-shadow: 0 0 0 1px rgba(255,255,255,0.3); }
+
+
+/* ══════════════════════════════
+   BOOT SCREEN
+══════════════════════════════ */
+.boot-screen {
+    position: absolute; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.85); border-radius: 12px;
+    display: none; align-items: center; justify-content: center;
+    transition: opacity 0.4s ease; backdrop-filter: blur(8px);
+}
+.boot-screen.hide { opacity: 0; pointer-events: none; }
+
+/* ══════════════════════════════
+   LAUNCH OVERLAY
+══════════════════════════════ */
+.launch-overlay {
+    position: absolute; inset: 0; z-index: 150;
+    border-radius: 12px; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+}
+.launch-overlay.active { opacity: 1; pointer-events: all; }
+.lo-bg { position: absolute; inset: 0; transition: background 0.5s; }
+.lo-mask { position: absolute; inset: 0; background: rgba(10,10,10,0.82); backdrop-filter: blur(2px); }
+.lo-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; width: 340px; }
+.lo-logo svg { width: 52px; height: 52px; filter: drop-shadow(0 0 14px rgba(139,92,246,0.5)); }
+.lo-game-title { font-family: 'Inter','Segoe UI',sans-serif; font-size: 26px; font-weight: 700; letter-spacing: 3px; color: #fff; text-align: center; }
+.lo-modpack { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+.lo-steps { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+.lo-step {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+    font-size: 12px; font-weight: 600; color: var(--text-muted); transition: all 0.3s ease;
+}
+.lo-step.done { color: var(--text-main); background: rgba(139,92,246,0.06); border-color: rgba(139,92,246,0.2); }
+.lo-step.active { color: #fff; background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.35); }
+.lo-step-icon { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.1); transition: all 0.3s ease; }
+.lo-step.done .lo-step-icon { background: var(--accent); border-color: var(--accent); }
+.lo-step.active .lo-step-icon { border-color: var(--accent); border-top-color: transparent; animation: spinStep 0.7s linear infinite; }
+@keyframes spinStep { to { transform: rotate(360deg); } }
+.lo-bar-wrap { width: 100%; height: 3px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.lo-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; transition: width 0.4s ease; box-shadow: 0 0 8px rgba(139,92,246,0.5); }
+.lo-status { font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; }
+
+/* ══════════════════════════════
+   PROFIL CARDS
+══════════════════════════════ */
+.profile-card {
+    background: var(--bg-inner); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    display: flex; flex-direction: column; position: relative;
+    /* Carré parfait via aspect-ratio */
+    aspect-ratio: 1 / 1;
+}
+.profile-card:hover { border-color: var(--border-md); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.profile-card.active-profile { border-color: var(--accent) !important; box-shadow: 0 0 0 2px rgba(139,92,246,0.45), 0 8px 24px rgba(0,0,0,0.5) !important; }
+.profile-card-thumb { width: 100%; flex: 1; position: relative; overflow: hidden; background: var(--bg-card); min-height: 0; }
+.profile-card-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.profile-card-icon { position: absolute; top: 8px; left: 8px; width: 32px; height: 32px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 2px solid rgba(255,255,255,0.15); }
+.profile-card-body { padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+.profile-card-name { font-size: 12px; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.profile-card-version { font-size: 10px; font-weight: 700; color: var(--accent); }
+.profile-card-meta { font-size: 9px; color: var(--text-muted); }
+.profile-card-time { font-size: 9px; color: var(--text-muted); margin-top: 1px; }
+.profile-card-actions { display: flex; gap: 4px; padding: 0 8px 8px; flex-shrink: 0; }
+.profile-btn-secondary { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-sub); padding: 5px 4px; border-radius: 5px; font-family: 'Inter',sans-serif; font-size: 9px; font-weight: 700; cursor: pointer; transition: background 0.15s; letter-spacing: 0.3px; text-transform: uppercase; }
+.profile-btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.profile-btn-play { flex: 1; background: var(--accent); border: none; color: #fff; padding: 5px 4px; border-radius: 5px; font-family: 'Inter',sans-serif; font-size: 10px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+.profile-btn-play:hover { background: #9B7DD4; }
+.profile-card-add { background: transparent; border: 2px dashed rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; aspect-ratio: 1/1; }
+.profile-card-add:hover { border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.04); transform: none; box-shadow: none; }
+/* Badge "Actif" */
+.profile-active-badge { position: absolute; top: 8px; right: 8px; background: var(--accent); color: #fff; font-size: 8px; font-weight: 800; letter-spacing: 1px; padding: 2px 7px; border-radius: 20px; text-transform: uppercase; z-index: 2; }
+
+/* ── Cape / Skin cards ── */
+.anim-btn { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-muted); padding: 4px 10px; border-radius: 5px; font-family: 'Inter',sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+.anim-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-main); }
+.anim-btn.active-anim { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #22c55e; }
+.cape-card { background: var(--bg-card); border: 2px solid var(--border); border-radius: 8px; padding: 8px; cursor: pointer; text-align: center; transition: border-color 0.15s, background 0.15s; }
+.cape-card:hover { border-color: var(--border-md); background: var(--bg-hover); }
+.cape-card.active-cape { border-color: var(--accent); background: rgba(139,92,246,0.08); }
+.cape-card img { width: 32px; height: 22px; image-rendering: pixelated; display: block; margin: 0 auto 4px; }
+.cape-name { font-size: 10px; color: var(--text-sub); font-weight: 600; }
+
+/* ══════════════════════════════
+   MODAL INSTALLATION (addons.js)
+══════════════════════════════ */
+#installModal .modal-box { animation: fadeUp 0.2s both; }
+
+#installModal select:focus {
+    border-color: rgba(139,92,246,0.5);
+    outline: none;
+}
+
+#depsList > div {
+    animation: fadeUp 0.15s both;
+}

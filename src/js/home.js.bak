@@ -1,0 +1,178 @@
+/* ============================================================
+   home.js — Actualités & page d'accueil
+   Mighty Client v2.0.0
+   ============================================================ */
+'use strict';
+
+const NEWS_DATA = [
+    {
+        tag: 'MISE À JOUR',
+        title: 'Java 1.21.5 — Spring to Life',
+        desc: 'Variantes de mobs, buissons à lucioles, nouvelles plantes',
+        date: '25 mars 2025',
+        accent: '#a3e635',
+        imgCover: 'https://www.minecraft.net/content/dam/games/minecraft/key-art/MC_Spring-to-Life_KeyArt_1170x500.jpg',
+        imgFallback: 'https://minecraft.wiki/images/Java_Edition_1.21.5.png',
+        url: 'https://www.minecraft.net/en-us/article/minecraft-java-edition-1-21-5',
+    },
+    {
+        tag: 'MISE À JOUR',
+        title: 'Java 1.21.4 — The Garden Awakens',
+        desc: 'Pâle Jardin, bloc Creaking, Creaking Heart',
+        date: '3 déc. 2024',
+        accent: '#d1fae5',
+        imgCover: 'https://www.minecraft.net/content/dam/games/minecraft/key-art/MC-Garden-Awakens_KeyArt_1170x500.jpg',
+        imgFallback: 'https://minecraft.wiki/images/Java_Edition_1.21.4.png',
+        url: 'https://www.minecraft.net/en-us/article/minecraft-java-edition-1-21-4',
+    },
+    {
+        tag: 'SODIUM',
+        title: 'Sodium 0.6.13 — Support 1.21.5',
+        desc: 'Compatibilité 1.21.5, correctifs de sprites animés',
+        date: '4 avr. 2025',
+        accent: '#fb923c',
+        imgIcon: 'https://cdn.modrinth.com/data/AANobbMI/icon.png',
+        imgBg: 'linear-gradient(135deg,#1f0d00,#5c2d00)',
+        url: 'https://modrinth.com/mod/sodium',
+    },
+    {
+        tag: 'FABRIC',
+        title: 'Fabric Loader 0.16.10 — Stable',
+        desc: 'Support complet Java 21 & Minecraft 1.21.x',
+        date: 'Jan. 2025',
+        accent: '#c4a4e0',
+        imgIcon: 'https://fabricmc.net/assets/logo.png',
+        imgBg: 'linear-gradient(135deg,#1a1a2e,#0f3460)',
+        url: 'https://fabricmc.net',
+    },
+    {
+        tag: 'NEOFORGE',
+        title: 'NeoForge 21.1 — Multi-loader stable',
+        desc: 'Migration simplifiée depuis Forge, API unifiée',
+        date: 'Sept. 2024',
+        accent: '#f59e0b',
+        imgIcon: 'https://neoforged.net/img/neoforged.svg',
+        imgBg: 'linear-gradient(135deg,#1a0d00,#3d2000)',
+        url: 'https://neoforged.net',
+    },
+    {
+        tag: 'MOD SPOTLIGHT',
+        title: 'Create 0.5.1 — Trains & Contraptions',
+        desc: 'Nouveaux trains, mécanismes et contraptions',
+        date: 'Août 2024',
+        accent: '#818cf8',
+        imgIcon: 'https://cdn.modrinth.com/data/LNytGWDc/icon.png',
+        imgBg: 'linear-gradient(135deg,#0d0d1a,#1a1a3d)',
+        url: 'https://modrinth.com/mod/create',
+    },
+    {
+        tag: 'IRIS SHADERS',
+        title: 'Iris 1.8 — Compatibilité Sodium 0.6',
+        desc: 'Shaders optimisés pour le nouveau pipeline',
+        date: 'Juil. 2024',
+        accent: '#38bdf8',
+        imgIcon: 'https://cdn.modrinth.com/data/YL57xq9U/icon.png',
+        imgBg: 'linear-gradient(135deg,#001a2e,#002d4a)',
+        url: 'https://modrinth.com/mod/iris',
+    },
+    {
+        tag: 'ÉVÉNEMENT',
+        title: 'A Minecraft Movie — Avril 2025',
+        desc: 'Le film Minecraft est sorti le 4 avril 2025',
+        date: '4 avr. 2025',
+        accent: '#f87171',
+        imgCover: 'https://www.minecraft.net/content/dam/games/minecraft/key-art/Movies_KeyArt_1170x500.jpg',
+        imgFallback: 'https://minecraft.wiki/images/A_Minecraft_Movie_Poster.jpg',
+        url: 'https://www.minecraft.net/en-us/article/a-minecraft-movie',
+    },
+    {
+        tag: 'MISE À JOUR',
+        title: 'Java 1.21.3 — Tricky Trials',
+        desc: 'Chambres d\'épreuve, Mace, Boîtier de Crafter',
+        date: 'Nov. 2024',
+        accent: '#fbbf24',
+        imgCover: 'https://www.minecraft.net/content/dam/games/minecraft/key-art/MC-Tricky-Trials_KeyArt_1170x500.jpg',
+        imgFallback: 'https://minecraft.wiki/images/Java_Edition_1.21.png',
+        url: 'https://www.minecraft.net/en-us/article/minecraft-java-edition-1-21',
+    },
+];
+
+const LAYOUT_SEQUENCE = [
+    { type: 'full',   count: 1 },
+    { type: 'left',   count: 2 },
+    { type: 'three',  count: 3 },
+    { type: 'right',  count: 2 },
+    { type: 'full',   count: 1 },
+];
+
+function _renderCard(item) {
+    let bgStyle, imgHtml;
+
+    if (item.imgCover) {
+        // Image de couverture plein fond
+        bgStyle = 'background:#0a0a12;';
+        imgHtml = `
+            <img src="${item.imgCover}"
+                 onerror="this.src='${item.imgFallback || ''}';this.onerror=function(){this.style.display='none'};"
+                 style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.75;transition:opacity .3s;">`;
+    } else if (item.imgIcon) {
+        // Logo centré sur fond coloré
+        bgStyle = `background:${item.imgBg || '#0a0a12'};`;
+        imgHtml = `
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                <img src="${item.imgIcon}"
+                     onerror="this.style.display='none'"
+                     style="width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 0 20px ${item.accent}66);opacity:0.85;">
+            </div>`;
+    } else {
+        bgStyle = 'background:#0a0a12;';
+        imgHtml = '';
+    }
+
+    return `<div class="nf-item" onclick="_openNewsLink('${item.url}')">
+        <div class="nf-item-bg" style="${bgStyle}position:absolute;inset:0;">
+            ${imgHtml}
+        </div>
+        <div class="nf-item-overlay"></div>
+        <div class="nf-item-content">
+            <div class="nf-item-tag" style="color:${item.accent};background:${item.accent}18;border:1px solid ${item.accent}33;border-radius:3px;padding:1px 6px;display:inline-block;font-size:7.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px;">${item.tag}</div>
+            <div class="nf-item-title">${item.title}</div>
+            ${item.desc ? `<div class="nf-item-desc" style="font-size:9px;color:rgba(255,255,255,.5);margin-top:2px;line-height:1.4;">${item.desc}</div>` : ''}
+            <div class="nf-item-date">${item.date}</div>
+        </div>
+    </div>`;
+}
+
+function renderNews() {
+    const feed = document.getElementById('newsFeed');
+    if (!feed) return;
+    feed.innerHTML = '';
+
+    let idx = 0;
+    for (const layout of LAYOUT_SEQUENCE) {
+        if (idx >= NEWS_DATA.length) break;
+        const row = document.createElement('div');
+        row.className = `news-row layout-${layout.type}`;
+        row.innerHTML = NEWS_DATA.slice(idx, idx + layout.count).map(_renderCard).join('');
+        idx += layout.count;
+        feed.appendChild(row);
+    }
+
+    while (idx < NEWS_DATA.length) {
+        const slice = NEWS_DATA.slice(idx, idx + 2);
+        const row = document.createElement('div');
+        row.className = `news-row layout-${slice.length === 1 ? 'full' : 'two'}`;
+        row.innerHTML = slice.map(_renderCard).join('');
+        idx += slice.length;
+        feed.appendChild(row);
+    }
+}
+
+function _openNewsLink(url) {
+    if (!url) return;
+    if (window.electronAPI?.openExternal) window.electronAPI.openExternal(url);
+    else window.open(url, '_blank');
+}
+
+window.renderNews    = renderNews;
+window._openNewsLink = _openNewsLink;

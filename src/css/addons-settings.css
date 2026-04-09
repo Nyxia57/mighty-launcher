@@ -1,0 +1,349 @@
+/* ============================================================
+   05-addons-settings.css
+   Pages Mods & Add-ons et Paramètres
+   ============================================================ */
+
+/* ══════════════════════════════
+   ADDONS PAGE v2 — sans sidebar, grille 2 colonnes
+══════════════════════════════ */
+
+/* Layout principal plein écran */
+.addons-layout-v2 {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    gap: 8px;
+}
+
+/* Topbar : onglets + barre de recherche sur la même ligne */
+.addons-topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* Onglets Installés / Explorer */
+.addons-view-tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-inner);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+    flex-shrink: 0;
+}
+
+.addons-view-tab {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.addons-view-tab:hover { color: var(--text-sub); background: rgba(255,255,255,0.04); }
+.addons-view-tab.active { background: var(--bg-card); color: var(--text-main); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+
+.addons-view-tab-count {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: rgba(124,92,191,0.15);
+    color: #9b7dd4;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* Toolbar inline (search + filtres) */
+.addons-toolbar-inline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+}
+
+/* Wrap des vues scrollable */
+.addons-views-wrap {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.addon-view { display: none; flex-direction: column; flex: 1; overflow: hidden; gap: 8px; }
+.addon-view.active { display: flex; animation: fadeUp 0.2s both; }
+
+/* ── GRILLE 2 COLONNES ── */
+.addon-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    overflow-y: auto;
+    padding-right: 2px;
+    align-content: start;
+    flex: 1;
+}
+.addon-grid-2col::-webkit-scrollbar { width: 3px; }
+.addon-grid-2col::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+/* Message vide pleine largeur */
+.addon-grid-2col .addon-empty,
+.addon-grid-2col .mr-welcome { grid-column: 1 / -1; }
+
+/* Carte installée — compacte pour grille 2col */
+.addon-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 11px;
+    transition: border-color 0.15s, background 0.15s;
+    animation: fadeUp 0.2s both;
+    cursor: pointer;
+    min-width: 0;
+}
+.addon-item:hover { border-color: var(--border-md); background: var(--bg-hover); }
+.addon-icon { width: 34px; height: 34px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0; letter-spacing: -0.5px; background-size: cover; background-position: center; }
+.addon-info { flex: 1; min-width: 0; }
+.addon-name { font-size: 11px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.addon-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.8px; padding: 1px 5px; border-radius: 3px; background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
+.addon-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.addon-item-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+
+/* Carte Modrinth — adaptée 2col */
+.mr-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 10px 11px;
+    transition: border-color 0.15s, background 0.15s;
+    animation: fadeUp 0.2s both;
+    cursor: pointer;
+    min-width: 0;
+}
+.mr-card:hover { border-color: rgba(124,92,191,0.35); background: var(--bg-hover); }
+.mr-card-icon { width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0; object-fit: cover; background: var(--bg-inner); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #fff; overflow: hidden; }
+.mr-card-icon img { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; }
+.mr-card-body { flex: 1; min-width: 0; }
+.mr-card-title { font-size: 11px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mr-card-author { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.mr-card-desc { font-size: 10px; color: var(--text-sub); margin-top: 3px; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mr-card-meta { display: flex; gap: 7px; margin-top: 5px; align-items: center; flex-wrap: wrap; }
+.mr-stat { font-size: 10px; color: var(--text-muted); display: flex; align-items: center; gap: 2px; }
+.mr-category-pill { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 20px; background: rgba(124,92,191,0.1); color: #9b7dd4; border: 1px solid rgba(124,92,191,0.2); }
+.mr-loader-pill { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 20px; background: rgba(34,197,94,0.08); color: #4ade80; border: 1px solid rgba(34,197,94,0.15); }
+.mr-card-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.mr-install-btn { background: var(--accent); border: none; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer; transition: background 0.15s; white-space: nowrap; font-family: 'Inter',sans-serif; }
+.mr-install-btn:hover { background: #9b7dd4; }
+.mr-install-btn:disabled { background: rgba(124,92,191,0.3); cursor: default; }
+.mr-install-btn.installed { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+
+/* Skeleton 2col */
+.mr-skeleton { background: var(--bg-card); border: 1px solid var(--border); border-radius: 9px; padding: 10px 11px; display: flex; gap: 10px; }
+.sk-icon { width: 38px; height: 38px; border-radius: 8px; background: rgba(255,255,255,0.05); animation: shimmer 1.4s infinite; flex-shrink: 0; }
+.sk-lines { flex: 1; display: flex; flex-direction: column; gap: 7px; justify-content: center; }
+.sk-line { height: 9px; border-radius: 5px; background: rgba(255,255,255,0.05); animation: shimmer 1.4s infinite; }
+.sk-line.short { width: 40%; }
+.sk-line.med { width: 65%; }
+@keyframes shimmer { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+/* Welcome */
+.mr-welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 8px; text-align: center; padding: 30px; }
+.mr-welcome-icon { font-size: 36px; opacity: 0.5; }
+.mr-welcome-title { font-size: 14px; font-weight: 700; color: var(--text-sub); }
+.mr-welcome-sub { font-size: 11px; color: var(--text-muted); max-width: 260px; line-height: 1.55; }
+
+/* Pagination */
+.mr-pagination { display: flex; align-items: center; justify-content: center; gap: 10px; flex-shrink: 0; padding-top: 4px; }
+
+/* Detail panel */
+.mr-detail-panel { position: absolute; inset: 0; background: var(--bg-main); z-index: 50; display: flex; flex-direction: column; border-radius: 0; overflow: hidden; animation: fadeUp 0.2s both; }
+.mr-detail-header { display: flex; align-items: center; gap: 10px; padding: 0 0 10px 0; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.mr-detail-icon { width: 44px; height: 44px; border-radius: 9px; overflow: hidden; flex-shrink: 0; background: var(--bg-card); display:flex;align-items:center;justify-content:center; font-size:14px;font-weight:800;color:#fff; }
+.mr-detail-icon img { width:100%;height:100%;object-fit:cover; }
+.mr-detail-title-block { display: flex; flex-direction: column; gap: 2px; }
+.mr-detail-body { flex: 1; overflow-y: auto; padding: 12px 0 0 0; display: flex; flex-direction: column; gap: 12px; }
+.mr-detail-stats { display: flex; gap: 14px; flex-wrap: wrap; }
+.mr-detail-stat { display: flex; flex-direction: column; gap: 2px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 7px; padding: 7px 12px; min-width: 80px; }
+.mr-detail-stat-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); }
+.mr-detail-stat-value { font-size: 13px; font-weight: 700; color: var(--text-main); }
+.mr-detail-desc { font-size: 11px; color: var(--text-sub); line-height: 1.6; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.mr-detail-section-title { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+.mr-detail-versions { display: flex; flex-direction: column; gap: 4px; }
+.mr-version-row { display: flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 7px; padding: 8px 11px; }
+.mr-version-row:hover { border-color: var(--border-md); }
+.mr-version-name { font-size: 12px; font-weight: 700; color: var(--text-main); flex: 1; }
+.mr-version-meta { font-size: 10px; color: var(--text-muted); }
+.mr-version-dl-btn { background: rgba(124,92,191,0.15); border: 1px solid rgba(124,92,191,0.3); color: #9b7dd4; padding: 4px 11px; border-radius: 5px; font-size: 11px; font-weight: 700; cursor: pointer; font-family:'Inter',sans-serif; transition: background 0.15s; }
+.mr-version-dl-btn:hover { background: rgba(124,92,191,0.3); }
+
+/* Installed item actions */
+.addon-item-actions { display: flex; align-items: center; gap: 4px; }
+
+/* ── ancienne sidebar — désactivée ── */
+.addons-layout { display: none !important; }
+.addons-sidebar { display: none !important; }
+.addons-main-area { display: none !important; }
+.addon-type-tabs { display: none !important; }
+
+/* ══════════════════════════════
+   SETTINGS PAGE
+══════════════════════════════ */
+.settings-layout { display: grid; grid-template-columns: 140px 1fr; gap: 10px; flex: 1; overflow: hidden; }
+.settings-sidebar { display: flex; flex-direction: column; gap: 2px; }
+.settings-tab {
+    display: flex; align-items: center; gap: 9px; padding: 8px 11px;
+    border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+    font-size: 12px; font-weight: 600; color: var(--text-muted);
+    transition: all 0.15s; background: none;
+    font-family: 'Inter',sans-serif;
+}
+.settings-tab:hover { background: var(--bg-card); color: var(--text-sub); }
+.settings-tab.active { background: rgba(124,92,191,0.1); border-color: rgba(124,92,191,0.2); color: var(--text-main); }
+.settings-tab-icon { font-size: 14px; }
+
+.settings-content { overflow-y: auto; flex: 1; padding-right: 2px; display: flex; flex-direction: column; }
+.settings-content::-webkit-scrollbar { width: 3px; }
+.settings-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+.settings-section { display: flex; flex-direction: column; gap: 1px; }
+.settings-section-title { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); padding: 0 4px; margin-bottom: 8px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 4px; gap: 12px; }
+.settings-row:hover { border-color: var(--border-md); }
+.settings-row-label { font-size: 12px; font-weight: 600; color: var(--text-main); }
+.settings-row-desc { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.settings-row-control { flex-shrink: 0; display: flex; align-items: center; }
+.settings-select { background: var(--bg-inner); border: 1px solid var(--border); border-radius: 6px; padding: 5px 9px; color: var(--text-main); font-family: 'Inter',sans-serif; font-size: 12px; cursor: pointer; outline: none; }
+.settings-input { background: var(--bg-inner); border: 1px solid var(--border); border-radius: 6px; padding: 5px 9px; color: var(--text-main); font-family: 'Inter',sans-serif; font-size: 12px; outline: none; width: 100px; transition: border-color 0.15s; }
+.settings-input:focus { border-color: rgba(124,92,191,0.5); }
+.settings-slider { -webkit-appearance: none; width: 120px; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.1); outline: none; cursor: pointer; }
+.settings-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+
+/* ══════════════════════════════
+   MODRINTH INTEGRATION — New Addons Page
+══════════════════════════════ */
+
+/* Layout override */
+.addons-layout { grid-template-columns: 165px 1fr; position: relative; overflow: hidden; }
+
+.addons-main-area { display: flex; flex-direction: column; gap: 8px; overflow: hidden; position: relative; }
+.addon-view { display: none; flex-direction: column; flex: 1; overflow: hidden; gap: 8px; }
+.addon-view.active { display: flex; animation: fadeUp 0.2s both; }
+
+/* Type tabs in sidebar */
+.active-type .addon-tab-icon { background: var(--accent) !important; }
+.active-type .addon-tab-name { color: var(--text-main); }
+
+/* Toolbar & filters */
+.search-input { width:100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 7px; padding: 7px 12px; color: var(--text-main); font-family: 'Inter',sans-serif; font-size: 12px; outline: none; transition: border-color 0.15s; }
+.search-input:focus { border-color: rgba(124,92,191,0.5); }
+.search-input::placeholder { color: var(--text-muted); }
+
+.mr-filter-select {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 7px;
+    padding: 6px 9px; color: var(--text-sub); font-family: 'Inter',sans-serif;
+    font-size: 11px; cursor: pointer; outline: none; transition: border-color 0.15s;
+    flex-shrink: 0;
+}
+.mr-filter-select:focus { border-color: rgba(124,92,191,0.5); }
+.mr-filter-select option { background: var(--bg-main); }
+
+/* Modrinth result card */
+.mr-card {
+    display: flex; align-items: flex-start; gap: 11px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 12px;
+    transition: border-color 0.15s, background 0.15s;
+    animation: fadeUp 0.2s both; cursor: pointer;
+}
+.mr-card:hover { border-color: rgba(124,92,191,0.35); background: var(--bg-hover); }
+
+.mr-card-icon {
+    width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0;
+    object-fit: cover; background: var(--bg-inner);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: #fff;
+}
+.mr-card-icon img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
+.mr-card-body { flex: 1; min-width: 0; }
+.mr-card-title { font-size: 12px; font-weight: 700; color: var(--text-main); display:flex; align-items:center; gap:6px; }
+.mr-card-author { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.mr-card-desc { font-size: 11px; color: var(--text-sub); margin-top: 3px; line-height: 1.45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mr-card-meta { display: flex; gap: 10px; margin-top: 5px; align-items: center; flex-wrap: wrap; }
+.mr-stat { font-size: 10px; color: var(--text-muted); display: flex; align-items: center; gap: 3px; }
+.mr-category-pill { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: rgba(124,92,191,0.1); color: #9b7dd4; border: 1px solid rgba(124,92,191,0.2); }
+.mr-loader-pill { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; background: rgba(34,197,94,0.08); color: #4ade80; border: 1px solid rgba(34,197,94,0.15); }
+.mr-card-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+.mr-install-btn {
+    background: var(--accent); border: none; color: #fff;
+    padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700;
+    cursor: pointer; transition: background 0.15s; white-space: nowrap; font-family: 'Inter',sans-serif;
+}
+.mr-install-btn:hover { background: #9b7dd4; }
+.mr-install-btn:disabled { background: rgba(124,92,191,0.3); cursor: default; }
+.mr-install-btn.installed { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+
+/* Loading skeleton */
+.mr-skeleton { background: var(--bg-card); border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; display: flex; gap: 11px; }
+.sk-icon { width: 40px; height: 40px; border-radius: 8px; background: rgba(255,255,255,0.05); animation: shimmer 1.4s infinite; flex-shrink:0; }
+.sk-lines { flex: 1; display: flex; flex-direction: column; gap: 7px; justify-content: center; }
+.sk-line { height: 10px; border-radius: 5px; background: rgba(255,255,255,0.05); animation: shimmer 1.4s infinite; }
+.sk-line.short { width: 40%; }
+.sk-line.med { width: 65%; }
+@keyframes shimmer { 0%,100%{opacity:0.5} 50%{opacity:1} }
+
+/* Welcome screen */
+.mr-welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 8px; text-align: center; padding: 30px; }
+.mr-welcome-icon { font-size: 36px; opacity: 0.5; }
+.mr-welcome-title { font-size: 14px; font-weight: 700; color: var(--text-sub); }
+.mr-welcome-sub { font-size: 11px; color: var(--text-muted); max-width: 260px; line-height: 1.55; }
+
+/* Pagination */
+.mr-pagination { display: flex; align-items: center; justify-content: center; gap: 10px; flex-shrink: 0; padding-top: 4px; }
+
+/* Detail panel */
+.mr-detail-panel {
+    position: absolute; inset: 0; background: var(--bg-main);
+    z-index: 50; display: flex; flex-direction: column;
+    border-radius: 0; overflow: hidden;
+    animation: fadeUp 0.2s both;
+}
+.mr-detail-header { display: flex; align-items: center; gap: 10px; padding: 0 0 10px 0; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.mr-detail-icon { width: 44px; height: 44px; border-radius: 9px; overflow: hidden; flex-shrink: 0; background: var(--bg-card); display:flex;align-items:center;justify-content:center; font-size:14px;font-weight:800;color:#fff; }
+.mr-detail-icon img { width:100%;height:100%;object-fit:cover; }
+.mr-detail-title-block { display: flex; flex-direction: column; gap: 2px; }
+.mr-detail-body { flex: 1; overflow-y: auto; padding: 12px 0 0 0; display: flex; flex-direction: column; gap: 12px; }
+.mr-detail-stats { display: flex; gap: 14px; flex-wrap: wrap; }
+.mr-detail-stat { display: flex; flex-direction: column; gap: 2px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 7px; padding: 7px 12px; min-width: 80px; }
+.mr-detail-stat-label { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); }
+.mr-detail-stat-value { font-size: 13px; font-weight: 700; color: var(--text-main); }
+.mr-detail-desc { font-size: 11px; color: var(--text-sub); line-height: 1.6; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.mr-detail-section-title { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+.mr-detail-versions { display: flex; flex-direction: column; gap: 4px; }
+.mr-version-row { display: flex; align-items: center; gap: 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 7px; padding: 8px 11px; }
+.mr-version-row:hover { border-color: var(--border-md); }
+.mr-version-name { font-size: 12px; font-weight: 700; color: var(--text-main); flex: 1; }
+.mr-version-meta { font-size: 10px; color: var(--text-muted); }
+.mr-version-dl-btn { background: rgba(124,92,191,0.15); border: 1px solid rgba(124,92,191,0.3); color: #9b7dd4; padding: 4px 11px; border-radius: 5px; font-size: 11px; font-weight: 700; cursor: pointer; font-family:'Inter',sans-serif; transition: background 0.15s; }
+.mr-version-dl-btn:hover { background: rgba(124,92,191,0.3); }
+
+/* Installed mod item upgrade */
+.addon-item { cursor: pointer; }
+.addon-item-actions { display: flex; align-items: center; gap: 6px; }

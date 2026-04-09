@@ -1,0 +1,178 @@
+/* ============================================================
+   04-home.css
+   Page d'accueil : grille serveurs, fil d'actualités,
+   carte de lancement et panneau amis
+   ============================================================ */
+
+/* ── HOME LAYOUT ── */
+.home-layout { display: grid; grid-template-columns: 1fr 260px; gap: 10px; flex: 1; overflow: hidden; }
+.home-left { display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+.home-right { display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+
+/* ── SERVEURS ── */
+.servers-section { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+.servers-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+.servers-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 5px; height: 72px; }
+
+.server-card {
+    position: relative; border-radius: 8px;
+    border: 1px solid var(--border); overflow: hidden;
+    cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px;
+    transition: border-color 0.2s, transform 0.15s;
+}
+.server-card:hover { border-color: var(--border-md); transform: translateY(-1px); }
+.server-card:active { transform: translateY(0); }
+.server-card-bg { position: absolute; inset: 0; }
+.server-card-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.55); }
+.server-logo {
+    position: relative; z-index: 1; width: 22px; height: 22px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter','Segoe UI',sans-serif; font-size: 12px; font-weight: 900;
+    color: #fff; flex-shrink: 0;
+}
+.server-info { position: relative; z-index: 1; text-align: center; }
+.server-name { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px; }
+.server-players { display: none; }
+.server-join { display: none; }
+
+.server-card-add { border-style: dashed; border-color: rgba(255,255,255,0.1); background: transparent; }
+.server-card-add:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.02); transform: none; }
+.server-add-icon { position: relative; z-index: 1; font-size: 14px; color: var(--text-muted); line-height: 1; }
+.server-add-label { display: none; }
+
+/* ── ACTUALITÉS ── */
+.news-bottom { flex: 1; display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.news-bottom-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); flex-shrink: 0; }
+.news-scroll { flex: 1; overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; padding-right: 2px; }
+.news-scroll::-webkit-scrollbar { width: 3px; }
+.news-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+/* Layout de base */
+.news-row { display: grid; gap: 5px; flex-shrink: 0; }
+
+/* 2 cartes égales carrées */
+.news-row.layout-two   { grid-template-columns: 1fr 1fr; grid-template-rows: 150px; }
+
+/* 1 grande carte pleine largeur */
+.news-row.layout-full  { grid-template-columns: 1fr; grid-template-rows: 130px; }
+
+/* 1 large à gauche + 1 petite à droite */
+.news-row.layout-left  { grid-template-columns: 2fr 1fr; grid-template-rows: 160px; }
+
+/* 1 petite à gauche + 1 large à droite */
+.news-row.layout-right { grid-template-columns: 1fr 2fr; grid-template-rows: 160px; }
+
+/* 3 cartes égales */
+.news-row.layout-three { grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 130px; }
+
+.nf-item { position: relative; border-radius: var(--radius); overflow: hidden; cursor: pointer; border: 1px solid var(--border); transition: border-color 0.2s, transform 0.15s; }
+.nf-item:hover { border-color: var(--border-md); transform: scale(1.012); }
+.nf-item-bg { position: absolute; inset: 0; transition: transform 0.35s; }
+.nf-item:hover .nf-item-bg { transform: scale(1.04); }
+.nf-item-overlay { position: absolute; inset: 0; background: linear-gradient(to top,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.15) 65%,transparent 100%); }
+.nf-item-content { position: absolute; inset: 0; padding: 10px 12px; display: flex; flex-direction: column; justify-content: flex-end; }
+.nf-item-tag { font-size: 8px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
+.nf-item-title { font-size: 12px; font-weight: 700; color: #fff; line-height: 1.25; }
+.nf-item-date { font-size: 9px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+.nf-col-right { display: flex; flex-direction: column; gap: 5px; }
+
+/* anciens éléments désactivés */
+.featured-news,.featured-bg,.featured-overlay,.featured-pixel-art,.mc-block,
+.b1,.b2,.b3,.b4,.b5,.featured-content,.featured-tag,.featured-title,.featured-desc { display: none; }
+
+/* ── SÉLECTEUR DE PROFIL (launch card) ── */
+.lc-profile-selector {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 7px; padding: 7px 10px; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s; position: relative; z-index: 1;
+}
+.lc-profile-selector:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.15); }
+.lc-profile-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--accent); animation: pulse 2.5s ease infinite; }
+.lc-profile-info { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.lc-profile-name { font-size: 12px; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lc-profile-ver  { font-size: 9px; color: var(--text-muted); font-weight: 600; }
+
+.lc-profile-dropdown {
+    position: relative; z-index: 10;
+    background: var(--bg-card); border: 1px solid var(--border-md);
+    border-radius: 8px; overflow: hidden;
+    max-height: 160px; overflow-y: auto;
+}
+.lc-profile-dropdown::-webkit-scrollbar { width: 3px; }
+.lc-profile-dropdown::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+.lc-pd-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 11px; cursor: pointer; transition: background 0.12s;
+    border-bottom: 1px solid var(--border);
+}
+.lc-pd-item:last-child { border-bottom: none; }
+.lc-pd-item:hover { background: rgba(255,255,255,0.05); }
+.lc-pd-item.active { background: rgba(139,92,246,0.12); }
+.lc-pd-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.lc-pd-name { font-size: 12px; font-weight: 700; color: var(--text-main); flex: 1; }
+.lc-pd-ver  { font-size: 9px; color: var(--text-muted); font-weight: 600; }
+.lc-pd-check { font-size: 11px; color: var(--accent); font-weight: 900; }
+.lc-pd-empty { padding: 14px; text-align: center; font-size: 11px; color: var(--text-muted); }
+
+/* ── CARTE DE LANCEMENT ── */
+.launch-card {
+    position: relative; overflow: hidden;
+    background: var(--bg-inner); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 13px;
+    display: flex; flex-direction: column; gap: 9px; flex-shrink: 0;
+}
+.lc-version-bg {
+    position: absolute; inset: 0; opacity: 0; pointer-events: none;
+    transition: opacity 0.5s ease, background 0.5s ease;
+    border-radius: var(--radius);
+}
+.lc-version-bg.visible { opacity: 1; }
+.lc-version-mask {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(135deg,rgba(13,13,13,0.82) 0%,rgba(13,13,13,0.65) 100%);
+    border-radius: var(--radius);
+}
+.lc-server-label,
+.lc-modpack-row,
+.lc-version-row,
+.launch-bar,
+.launch-progress { position: relative; z-index: 1; }
+
+.lc-server-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+.lc-modpack-row { display: flex; align-items: center; gap: 7px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 6px 9px; cursor: pointer; transition: background 0.15s; }
+.lc-modpack-row:hover { background: rgba(255,255,255,0.09); }
+.lc-version-row { display: flex; align-items: center; justify-content: space-between; }
+.lc-version-chip { font-family: 'Inter','Segoe UI',sans-serif; font-size: 15px; font-weight: 700; color: var(--text-main); letter-spacing: 1px; }
+.lc-version-change { background: none; border: none; color: var(--text-muted); font-size: 11px; font-weight: 600; cursor: pointer; padding: 0; transition: color 0.15s; font-family: 'Inter','Segoe UI',sans-serif; }
+.lc-version-change:hover { color: var(--text-main); }
+
+.modpack-dot { width: 6px; height: 6px; background: #9B7DD4; border-radius: 50%; flex-shrink: 0; animation: pulse 2.5s ease infinite; }
+@keyframes pulse { 0%,100%{ opacity: 1; } 50%{ opacity: 0.45; } }
+.modpack-name { font-size: 12px; font-weight: 600; flex: 1; color: var(--text-main); }
+.modpack-arrow { color: var(--text-muted); font-size: 9px; }
+
+
+/* ── PANNEAU AMIS ── */
+.friends-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+.panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-shrink: 0; }
+.panel-title { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+.panel-count { font-size: 10px; color: var(--text-muted); }
+.friends-box { background: var(--bg-inner); border-radius: var(--radius); flex: 1; border: 1px solid var(--border); overflow-y: auto; }
+.friends-box::-webkit-scrollbar { width: 3px; }
+.friends-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+.friends-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 6px; color: var(--text-muted); }
+.friends-empty-text { font-size: 12px; font-weight: 600; }
+
+.friend-item { display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.12s; animation: friendIn 0.3s ease both; }
+@keyframes friendIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
+.friend-item:hover { background: rgba(255,255,255,0.03); }
+.friend-avatar { width: 26px; height: 26px; border-radius: 5px; background: #252525; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text-sub); flex-shrink: 0; }
+.friend-info { flex: 1; min-width: 0; }
+.friend-name { font-size: 12px; font-weight: 700; color: var(--text-main); }
+.friend-status { font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.friend-indicator { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.online  { background: #8B5CF6; }
+.ingame  { background: #e0a030; }
+.away    { background: #555; }

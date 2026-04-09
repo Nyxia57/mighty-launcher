@@ -1,30 +1,42 @@
-/* ═══════════════════════════════════════════════
-   VARIABLES, RESET & FONTS
-   ═══════════════════════════════════════════════ */
+/* ============================================================
+   01-variables.css
+   Variables CSS globales, reset de base et scrollbars
+   ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
-:root{
-  --bg0:#0e0e10;
-  --bg1:#141416;
-  --bg2:#1a1a1e;
-  --bg3:#202026;
-  --bg4:#28282f;
-  --border:#2a2a32;
-  --border2:#333340;
-  --accent:#4ade80;
-  --accent-dim:rgba(74,222,128,.12);
-  --accent-glow:rgba(74,222,128,.25);
-  --blue:#60a5fa;
-  --red:#f87171;
-  --orange:#fb923c;
-  --text0:#f0f0f5;
-  --text1:#9090a8;
-  --text2:#55556a;
-  --font:'Nunito',sans-serif;
-  --mono:'JetBrains Mono',monospace;
-  --topbar:54px;
+:root {
+    --bg-body:   #1c1c1e;
+    --bg-main:   #242428;
+    --bg-card:   #2e2e33;
+    --bg-inner:  #1a1a1e;
+    --bg-hover:  #35353c;
+    --accent:    #8B5CF6;
+    --accent-dim:#6D28D9;
+    --text-main: #f0f0f2;
+    --text-sub:  #a0a0aa;
+    --text-muted:#606068;
+    --border:    rgba(255,255,255,0.09);
+    --border-md: rgba(255,255,255,0.16);
+    --radius:    10px;
 }
 
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;overflow:hidden;background:var(--bg0);color:var(--text0);font-family:var(--font)}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── SCROLLBARS GLOBAUX — fins et discrets ── */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.16); }
+
+body {
+    background: var(--bg-body);
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: var(--text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* canvas hidden — no floating particles */
+canvas.bg-canvas { display: none; }

@@ -1,511 +1,683 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Mighty Launcher</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>Mighty Client</title>
+    <link rel="icon" type="image/png" href="data:image/png;base64,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"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CSP Electron : autorise uniquement les ressources locales -->
+<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; img-src * data: blob:; font-src * data:;">
+    <!-- Inter est chargée localement — plus de dépendance Google Fonts -->
+    <style>
+        @import url('css/inter-local.css');
+    </style>
 
-<!-- ═══ CSS ═══ -->
-<link rel="stylesheet" href="css/variables.css">
-<link rel="stylesheet" href="css/layout.css">
-<link rel="stylesheet" href="css/play.css">
-<link rel="stylesheet" href="css/pages.css">
-<link rel="stylesheet" href="css/components.css">
-<link rel="stylesheet" href="css/accounts.css">
+
+    <!-- ── CSS ── -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/addons-settings.css">
+    <link rel="stylesheet" href="css/modals-overlays.css">
+    <link rel="stylesheet" href="css/wizard.css">
+    <link rel="stylesheet" href="css/skin-cape.css">
 </head>
 <body>
-<div id="app">
 
-<!-- ─── TOPBAR ──────────────────────────── -->
-<div id="topbar">
-  <div class="tb-logo">
-    <svg viewBox="0 0 24 24" fill="none">
-      <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" stroke="#4ade80" stroke-width="1.5" stroke-linejoin="round"/>
-      <path d="M12 2v20M2 7l10 5 10-5" stroke="#4ade80" stroke-width="1.2" stroke-linejoin="round" opacity=".6"/>
-    </svg>
-    <span class="tb-logo-name">MIGHTY</span>
-  </div>
+<canvas class="bg-canvas" id="bgCanvas"></canvas>
+<script src="js/navigation.js"></script>
+<div class="launcher-container">
 
-  <div class="tb-nav">
-    <button class="tb-nav-btn active" data-page="play" onclick="navPage('play',this)">
-      <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Play
-    </button>
-    <button class="tb-nav-btn" data-page="mods" onclick="navPage('mods',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-      Mods
-    </button>
-    <button class="tb-nav-btn" data-page="profiles" onclick="navPage('profiles',this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-      Profils
-    </button>
-  </div>
-
-  <div class="tb-spacer"></div>
-
-  <div class="tb-right">
-    <div class="tb-user" id="tb-user-chip" onclick="toggleAcctDD(event)" title="Comptes">
-      <div class="tb-avatar" id="tb-avatar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </div>
-      <div class="tb-user-info">
-        <span class="tb-user-label" id="tb-user-label">Non connecté</span>
-        <span class="tb-user-name" id="tb-username">Invité</span>
-        <span class="tb-user-status offline-ms" id="tb-user-status">Cliquer pour se connecter</span>
-      </div>
-    </div>
-
-    <button class="tb-icon-btn" title="Paramètres" onclick="navPage('settings',null)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
-    <button class="tb-icon-btn" title="Plein écran">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-    </button>
-
-    <div style="width:1px;height:24px;background:var(--border);margin:0 2px"></div>
-
-    <button class="tb-winbtn" onclick="window.electronAPI?.minimize()">
-      <svg viewBox="0 0 12 12"><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.5"/></svg>
-    </button>
-    <button class="tb-winbtn" onclick="window.electronAPI?.maximize()">
-      <svg viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
-    </button>
-    <button class="tb-winbtn close" onclick="window.electronAPI?.close()">
-      <svg viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="1.5"/><line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="1.5"/></svg>
-    </button>
-  </div>
-</div>
-
-<!-- ─── BODY ──────────────────────────── -->
-<div id="body">
-
-  <!-- SIDE ICONS -->
-  <div id="side-icons">
-    <button class="side-btn" title="Chat">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    </button>
-    <button class="side-btn" title="Amis">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    </button>
-    <button class="side-btn" title="Console">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
-    </button>
-  </div>
-
-  <!-- PAGES -->
-  <div id="pages">
-
-<!-- ══ PLAY PAGE ══ -->
-<div class="page active" id="play-page">
-  <div class="hero">
-    <div class="hero-img" id="hero-img"></div>
-    <div class="hero-overlay"></div>
-    <div id="hero-ver-badge" class="hero-ver-badge" style="display:none"></div>
-    <div class="hero-particles" id="particles"></div>
-    <div class="hero-content">
-      <div class="hero-title">Bienvenue sur <span>Mighty</span></div>
-      <div class="hero-sub" id="hero-sub">Aucun profil sélectionné — créez un profil pour commencer</div>
-    </div>
-    <div class="hero-launch-strip">
-      <button class="launch-btn" onclick="doLaunch()">
-        <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        LANCER <span id="launch-loader-label">FABRIC</span>
-      </button>
-      <button class="version-select-btn" onclick="toggleProfileDropdown(event)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
-        <span id="launch-profile-label">Changer de profil</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <!-- Profile dropdown -->
-      <div id="profile-dropdown" style="display:none;position:absolute;bottom:60px;left:50%;transform:translateX(-50%);
-        background:var(--bg1);border:1px solid var(--border2);border-radius:10px;
-        min-width:260px;max-width:340px;box-shadow:0 -8px 32px rgba(0,0,0,.6);z-index:300;overflow:hidden">
-        <div style="padding:8px 12px;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1.2px;text-transform:uppercase;border-bottom:1px solid var(--border)">Choisir un profil</div>
-        <div id="profile-dropdown-list" style="max-height:220px;overflow-y:auto"></div>
-        <div style="padding:8px 10px;border-top:1px solid var(--border)">
-          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="closeProfileDropdown();navPage('profiles',document.querySelector('[data-page=profiles]'))">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Créer un profil
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="status-strip">
-    <div class="sdot" id="sdot"></div>
-    <span class="stext" id="stext">Prêt</span>
-    <div class="sprog" id="sprog"><div class="sprogbar" id="sprogbar"></div></div>
-  </div>
-
-  <div class="bottom-panels" style="grid-template-columns:1fr">
-    <div class="panel">
-      <div class="panel-hd">
-        <span class="panel-title" style="display:flex;align-items:center;gap:7px">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Amis
-        </span>
-        <span class="panel-link" onclick="openAddFriend()">+ Ajouter</span>
-      </div>
-      <div class="panel-body" id="friends-list"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODS PAGE ══ -->
-<div class="page" id="mods-page">
-  <div class="mods-topbar">
-    <div class="search-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input class="search-input" id="mod-search" placeholder="Rechercher sur Modrinth..." oninput="debounceSearch()" />
-    </div>
-    <div class="filter-tabs">
-      <button class="ftab active" onclick="setFacet('mod',this)">Mods</button>
-      <button class="ftab" onclick="setFacet('resourcepack',this)">Resource Packs</button>
-      <button class="ftab" onclick="setFacet('shader',this)">Shaders</button>
-    </div>
-    <select class="fsel" id="mod-version-filter" onchange="searchModrinth()">
-      <option value="">Toutes versions</option>
-      <option value="1.21.4">1.21.4</option>
-      <option value="1.21.1">1.21.1</option>
-      <option value="1.20.4">1.20.4</option>
-      <option value="1.20.1">1.20.1</option>
-      <option value="1.19.4">1.19.4</option>
-      <option value="1.18.2">1.18.2</option>
-      <option value="1.16.5">1.16.5</option>
-      <option value="1.12.2">1.12.2</option>
-    </select>
-    <select class="fsel" id="mod-sort" onchange="searchModrinth()">
-      <option value="relevance">Pertinence</option>
-      <option value="downloads">Téléchargements</option>
-      <option value="follows">Abonnés</option>
-      <option value="newest">Récents</option>
-      <option value="updated">Mis à jour</option>
-    </select>
-    <button class="btn btn-ghost btn-sm" onclick="navPage('profiles',null)" style="margin-left:auto">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
-      Mes profils
-    </button>
-  </div>
-  <div class="mods-grid-wrap">
-    <div class="mods-grid" id="mods-grid">
-      <div class="loading-grid"><div class="spinner"></div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ PROFILES PAGE ══ -->
-<div class="page" id="profiles-page">
-  <div class="page-inner">
-    <div class="profiles-hd">
-      <h2>Mes profils</h2>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="importProfiles()" title="Importer (.json ou .mrpack)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Importer (.json / .mrpack)
-        </button>
-        <button class="btn btn-ghost btn-sm" onclick="exportProfiles()" title="Exporter (.json)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Exporter
-        </button>
-        <button class="btn btn-green" onclick="openCreateProfile()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nouveau profil
-        </button>
-      </div>
-    </div>
-    <div class="pgrid" id="pgrid">
-      <div class="add-pcard" onclick="openCreateProfile()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span>Créer un profil</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ SETTINGS PAGE ══ -->
-<div class="page" id="settings-page">
-  <div class="page-inner">
-    <div style="font-size:16px;font-weight:900;margin-bottom:14px">Paramètres</div>
-
-    <div class="settings-section">
-      <div class="ss-hd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Compte Minecraft</span></div>
-      <div class="ss-body" id="account-section"><!-- rendered by JS --></div>
-    </div>
-
-    <div class="settings-section">
-      <div class="ss-hd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg><span>Java & RAM</span></div>
-      <div class="ss-body">
-        <div class="form-row">
-          <div class="sg"><label class="sl">RAM min (Mo)</label><input class="si" type="number" id="g-rmin" value="512" min="256" step="256" oninput="saveG()"/></div>
-          <div class="sg"><label class="sl">RAM max (Mo)</label><input class="si" type="number" id="g-rmax" value="2048" min="512" step="256" oninput="saveG()"/></div>
-        </div>
-        <div class="sg"><label class="sl">Chemin Java</label><input class="si" id="g-java" placeholder="Détection automatique" oninput="saveG()"/></div>
-      </div>
-    </div>
-
-    <div class="settings-section">
-      <div class="ss-hd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Comportement</span></div>
-      <div class="ss-body">
-        <div class="sr"><div class="sr-lbl"><div class="sr-title">Fermer au lancement</div><div class="sr-sub">Fermer le launcher quand Minecraft démarre</div></div><div class="sw on" id="sw-close" onclick="this.classList.toggle('on');saveG()"></div></div>
-        <div class="sr"><div class="sr-lbl"><div class="sr-title">Vérifier les fichiers</div><div class="sr-sub">Intégrité des fichiers Minecraft avant lancement</div></div><div class="sw on" id="sw-verify" onclick="this.classList.toggle('on');saveG()"></div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-  </div><!-- /pages -->
-</div><!-- /body -->
-</div><!-- /app -->
-
-<!-- ═══ MODAL: PROFILE CREATE/EDIT ═══ -->
-<div class="ov" id="ov-profile" onclick="closeOvBg(event,'ov-profile')">
-  <div class="modal wide">
-    <div class="mhd">
-      <span class="mtitle" id="pm-title">Créer un profil</span>
-      <button class="mx" onclick="closeOv('ov-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="mtabs">
-      <div class="mtab active" onclick="mTab('gen',this)">Général</div>
-      <div class="mtab" onclick="mTab('mods-t',this)">Mods</div>
-      <div class="mtab" onclick="mTab('rp-t',this)">Resource Packs</div>
-      <div class="mtab" onclick="mTab('sh-t',this)">Shaders</div>
-      <div class="mtab" onclick="mTab('java-t',this)">Java</div>
-    </div>
-    <div class="mbody">
-      <div class="tpane active" id="tp-gen">
-        <div class="form-row">
-          <div class="sg" style="flex:2"><label class="sl">Nom du profil *</label><input class="si" id="pm-name" placeholder="Survival, PVP 1.8..."/></div>
-          <div class="sg"><label class="sl">Couleur</label>
-            <div style="display:flex;gap:7px;flex-wrap:wrap" id="banner-swatches">
-              <div class="bsw" style="width:36px;height:22px;border-radius:5px;cursor:pointer;border:2px solid #fff;background:linear-gradient(135deg,#0d2a3d,#1a3a1d)" data-c="linear-gradient(135deg,#0d2a3d,#1a3a1d)" onclick="pickBanner(this)"></div>
-              <div class="bsw" style="width:36px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;background:linear-gradient(135deg,#2a0d3d,#1a0d2a)" data-c="linear-gradient(135deg,#2a0d3d,#1a0d2a)" onclick="pickBanner(this)"></div>
-              <div class="bsw" style="width:36px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;background:linear-gradient(135deg,#3d2a0d,#2a1a0d)" data-c="linear-gradient(135deg,#3d2a0d,#2a1a0d)" onclick="pickBanner(this)"></div>
-              <div class="bsw" style="width:36px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;background:linear-gradient(135deg,#3d0d0d,#2a0d1a)" data-c="linear-gradient(135deg,#3d0d0d,#2a0d1a)" onclick="pickBanner(this)"></div>
-              <div class="bsw" style="width:36px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;background:linear-gradient(135deg,#0d1a3d,#0d2a3a)" data-c="linear-gradient(135deg,#0d1a3d,#0d2a3a)" onclick="pickBanner(this)"></div>
-              <div class="bsw" style="width:36px;height:22px;border-radius:5px;cursor:pointer;border:2px solid transparent;background:linear-gradient(135deg,#1a1a1a,#0a0a0a)" data-c="linear-gradient(135deg,#1a1a1a,#0a0a0a)" onclick="pickBanner(this)"></div>
+    <!-- ════════════ HEADER ════════════ -->
+    <!-- -webkit-app-region:drag permet de déplacer la fenêtre Electron -->
+    <header style="-webkit-app-region: drag;">
+        <div style="display:flex;align-items:center;gap:10px;-webkit-app-region:no-drag;">
+            <div class="logo-section" onclick="">
+                <div class="logo-icon">
+                    <img src="data:image/png;base64,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" alt="Mighty Client" style="width:32px;height:32px;object-fit:contain;"/>
+                </div>
+                <div class="brand-name">MIGHTY</div>
             </div>
-          </div>
         </div>
-        <div class="form-row" style="overflow:visible">
-          <div class="sg" style="position:relative;z-index:1000">
-            <label class="sl">Version Minecraft *</label>
-            <input class="si" id="pm-ver-search" placeholder="ex: 1.21.11" autocomplete="off"
-              oninput="filterVerDropdown()" onfocus="openVerDropdown()" onblur="setTimeout(closeVerDropdown,200)"
-              style="cursor:pointer"/>
-            <input type="hidden" id="pm-ver" value=""/>
-            <div id="ver-dropdown" style="
-              display:none;position:fixed;z-index:99999;
-              width:260px;
-              background:var(--bg1);border:1px solid var(--accent);border-radius:10px;
-              max-height:280px;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,.8);margin-top:3px">
-              <div id="ver-dropdown-list"></div>
+        <div class="header-controls" style="-webkit-app-region:no-drag;">
+            <div id="userZone" style="display:flex;align-items:center;gap:8px;">
+                <button class="btn btn-login" id="loginBtn" onclick="handleLogin()">Login</button>
             </div>
-          </div>
-          <div class="sg"><label class="sl">Type</label>
-            <select class="ssel" id="pm-ver-type" onchange="filterVerDropdown()">
-              <option value="all">Toutes (snapshots incluses)</option>
-              <option value="release">Releases uniquement</option>
-            </select>
-          </div>
-          <div class="sg"><label class="sl">Loader</label>
-            <select class="ssel" id="pm-loader">
-              <option value="vanilla">Vanilla</option><option value="forge">Forge</option>
-              <option value="fabric">Fabric</option><option value="neoforge">NeoForge</option>
-              <option value="quilt">Quilt</option>
-            </select>
-          </div>
-          <div class="sg"><label class="sl">Version loader</label><input class="si" id="pm-lver" placeholder="ex: 0.15.7"/></div>
+            <button class="btn btn-sq" onclick="showPage('addons')" title="Mods">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/><rect x="15" y="15" width="7" height="7"/><path d="M2 15h7v7H2z"/></svg>
+            </button>
+            <button class="btn version-badge" id="versionBadge">1.21.4</button>
+            <button class="btn btn-sq" onclick="showPage('settings')" title="Paramètres">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+            <!-- Contrôles Windows -->
+            <div class="win-controls" style="margin-left:4px;display:flex;flex-direction:row;align-items:center;gap:1px;">
+                <button class="win-btn-w win-min-w" onclick="winMinimize()" title="Réduire">
+                    <svg width="8" height="1" viewBox="0 0 8 1"><line x1="0" y1="0.5" x2="8" y2="0.5" stroke="currentColor" stroke-width="1.2"/></svg>
+                </button>
+                <button class="win-btn-w win-max-w" onclick="winMaximize()" title="Plein écran" id="winMaxBtn">
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><rect x="0.6" y="0.6" width="6.8" height="6.8" stroke="currentColor" stroke-width="1.2"/></svg>
+                </button>
+                <button class="win-btn-w win-close-w" onclick="winClose()" title="Fermer">
+                    <svg width="8" height="8" viewBox="0 0 8 8"><line x1="0.5" y1="0.5" x2="7.5" y2="7.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="7.5" y1="0.5" x2="0.5" y2="7.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                </button>
+            </div>
         </div>
-      </div>
+    </header>
 
-      <div class="tpane" id="tp-mods-t">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:12px;color:var(--text2)">Mods installés dans ce profil</span>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-ghost btn-sm" onclick="openAddItemInModal('mod')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Manuel
-            </button>
-            <button class="btn btn-green btn-sm" onclick="goToModsFromProfile('mod')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Parcourir Modrinth
-            </button>
-          </div>
+    <!-- ════════════ NAV TABS ════════════ -->
+    <div class="nav-tabs">
+        <button class="nav-tab active" data-page="home" onclick="showPage('home')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Accueil
+        </button>
+        <button class="nav-tab" data-page="profils" onclick="showPage('profils')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Profils
+        </button>
+        <button class="nav-tab" data-page="addons" onclick="showPage('addons')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="7" height="7"/><rect x="15" y="3" width="7" height="7"/><rect x="15" y="15" width="7" height="7"/><path d="M2 15h7v7H2z"/></svg>
+            Mods &amp; Add-ons
+        </button>
+        <button class="nav-tab" data-page="settings" onclick="showPage('settings')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Paramètres
+        </button>
+        <button class="nav-tab" data-page="support" onclick="showPage('support')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Support
+        </button>
+    </div>
+
+    <!-- ════════════════════════════════════
+         PAGE ACCUEIL
+    ════════════════════════════════════ -->
+    <div class="page active" id="page-home">
+        <div class="home-layout">
+
+            <!-- GAUCHE -->
+            <div class="home-left">
+                <div class="servers-section">
+                    <div class="servers-label">Serveurs en vedette</div>
+                    <div class="servers-grid" id="serversGrid"></div>
+                </div>
+                <div class="news-bottom">
+                    <div class="news-bottom-label">Actualités</div>
+                    <div class="news-scroll" id="newsFeed"></div>
+                </div>
+            </div>
+
+            <!-- DROITE -->
+            <div class="home-right">
+
+                <!-- Carte de lancement -->
+                <div class="launch-card">
+                    <div class="lc-version-bg" id="lcVersionBg"></div>
+                    <div class="lc-version-mask"></div>
+
+                    <!-- Sélecteur de profil actif -->
+                    <div class="lc-server-label">PROFIL ACTIF</div>
+                    <div class="lc-profile-selector" id="lcProfileSelector" onclick="toggleProfileDropdown()">
+                        <div class="lc-profile-dot" id="lcProfileDot"></div>
+                        <div class="lc-profile-info">
+                            <span class="lc-profile-name" id="lcProfileName">Aucun profil</span>
+                            <span class="lc-profile-ver" id="lcProfileVer">—</span>
+                        </div>
+                        <span class="modpack-arrow">&#9660;</span>
+                    </div>
+
+                    <!-- Dropdown profils -->
+                    <div class="lc-profile-dropdown" id="lcProfileDropdown" style="display:none;"></div>
+
+                    <!-- Version chip -->
+                    <div class="lc-version-row">
+                        <span class="lc-version-chip" id="launchVersion">1.21.4</span>
+                        <button class="lc-version-change" onclick="showPage('profils')" title="Gérer les profils">Gérer ›</button>
+                    </div>
+
+                    <!-- Bouton JOUER -->
+                    <button id="playBtn" class="state-play" onclick="launchGame()" style="position:relative;z-index:1;width:100%;padding:12px 0;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:14px;font-weight:800;letter-spacing:1.5px;cursor:pointer;background:linear-gradient(135deg,#8B5CF6 0%,#7C3AED 100%);color:#fff;box-shadow:0 4px 20px rgba(124,58,237,0.55);transition:all 0.18s;text-transform:uppercase;">
+                        <svg style="width:14px;height:14px;vertical-align:-2px;margin-right:7px;" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                        JOUER
+                    </button>
+
+                </div>
+
+
+
+                <!-- Panneau amis -->
+                <div class="friends-panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Amis</span>
+                        <div style="display:flex;align-items:center;gap:5px;">
+                            <span class="panel-count" id="friendCount">0 en ligne</span>
+                            <button onclick="openChatPanel()" style="background:rgba(124,92,191,0.15);border:1px solid rgba(124,92,191,0.3);color:var(--accent);width:20px;height:20px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;" title="Messages">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            </button>
+                            <button onclick="toggleAddFriend()" id="addFriendBtn" style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#22c55e;width:20px;height:20px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-size:14px;font-weight:700;line-height:1;" title="Ajouter un ami">+</button>
+                        </div>
+                    </div>
+                    <div id="addFriendBar" style="display:none;margin-bottom:6px;flex-direction:column;gap:5px;">
+                        <div style="display:flex;gap:5px;">
+                            <input id="addFriendInput" type="text" placeholder="Pseudo Minecraft..." maxlength="16" style="flex:1;background:var(--bg-inner);border:1px solid var(--border);border-radius:6px;padding:6px 9px;color:var(--text-main);font-family:'Inter',sans-serif;font-size:11px;outline:none;" onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')sendFriendRequest()">
+                            <button onclick="sendFriendRequest()" style="background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#22c55e;padding:0 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;">Ajouter</button>
+                        </div>
+                        <div id="addFriendStatus" style="font-size:10px;color:#606068;padding:0 2px;min-height:12px;"></div>
+                    </div>
+                    <div class="friends-box" id="friendsBox">
+                        <div class="friends-empty"><div class="friends-empty-text">Non connecté</div></div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-        <div id="pm-mods-list" class="item-list"></div>
-      </div>
+    </div>
 
-      <div class="tpane" id="tp-rp-t">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:12px;color:var(--text2)">Resource Packs</span>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-ghost btn-sm" onclick="openAddItemInModal('rp')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Manuel
-            </button>
-            <button class="btn btn-green btn-sm" onclick="goToModsFromProfile('resourcepack')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Parcourir Modrinth
-            </button>
-          </div>
+    <!-- ════════════════════════════════════
+         PAGE PROFILS
+    ════════════════════════════════════ -->
+    <div class="page" id="page-profils">
+        <div style="display:flex;flex-direction:column;gap:10px;flex:1;overflow:hidden;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+                <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);">Mes Profils</div>
+                <button onclick="createNewProfile()" style="background:var(--accent);border:none;color:#fff;padding:6px 13px;border-radius:7px;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#9B7DD4'" onmouseout="this.style.background='var(--accent)'">+ Nouveau profil</button>
+            </div>
+            <div id="profilesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;overflow-y:auto;padding-right:2px;flex:1;align-content:start;"></div>
         </div>
-        <div id="pm-rp-list" class="item-list"></div>
-      </div>
+    </div>
 
-      <div class="tpane" id="tp-sh-t">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:12px;color:var(--text2)">Shaders</span>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-ghost btn-sm" onclick="openAddItemInModal('shader')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Manuel
-            </button>
-            <button class="btn btn-green btn-sm" onclick="goToModsFromProfile('shader')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Parcourir Modrinth
-            </button>
-          </div>
+    <!-- ════════════════════════════════════
+         PAGE MODS & ADD-ONS
+    ════════════════════════════════════ -->
+    <div class="page" id="page-addons">
+        <div class="addons-layout-v2">
+
+            <!-- ── TOPBAR : recherche + filtres ── -->
+            <div class="addons-topbar">
+                <div class="addons-toolbar-inline">
+                    <div class="search-wrap" style="flex:1;position:relative;display:flex;align-items:center;">
+                        <span style="position:absolute;left:9px;font-size:11px;pointer-events:none;opacity:0.4;">🔍</span>
+                        <input class="search-input" type="text" id="modrinthSearch" placeholder="Rechercher sur Modrinth..." style="padding-left:28px;"
+                            oninput="debouncedModrinthSearch(this.value)" onkeydown="if(event.key==='Enter')searchModrinth()">
+                    </div>
+                    <select id="mrVersionFilter" class="mr-filter-select" onchange="searchModrinth()">
+                        <option value="">Toutes versions</option>
+                        <option value="1.21.11">1.21.11</option>
+                        <option value="1.21.10">1.21.10</option>
+                        <option value="1.21.4">1.21.4</option>
+                        <option value="1.21.3">1.21.3</option>
+                        <option value="1.21.2">1.21.2</option>
+                        <option value="1.21.1">1.21.1</option>
+                        <option value="1.21">1.21</option>
+                        <option value="1.20.6">1.20.6</option>
+                        <option value="1.20.4">1.20.4</option>
+                        <option value="1.20.2">1.20.2</option>
+                        <option value="1.20.1">1.20.1</option>
+                        <option value="1.20">1.20</option>
+                        <option value="1.19.4">1.19.4</option>
+                        <option value="1.19.2">1.19.2</option>
+                        <option value="1.19">1.19</option>
+                        <option value="1.18.2">1.18.2</option>
+                        <option value="1.18.1">1.18.1</option>
+                        <option value="1.18">1.18</option>
+                        <option value="1.17.1">1.17.1</option>
+                        <option value="1.17">1.17</option>
+                        <option value="1.16.5">1.16.5</option>
+                        <option value="1.16.1">1.16.1</option>
+                        <option value="1.16">1.16</option>
+                        <option value="1.15.2">1.15.2</option>
+                        <option value="1.15">1.15</option>
+                        <option value="1.14.4">1.14.4</option>
+                        <option value="1.14">1.14</option>
+                    </select>
+                    <select id="mrLoaderFilter" class="mr-filter-select" onchange="searchModrinth()">
+                        <option value="fabric" selected>Fabric</option>
+                    </select>
+                    <select id="mrSortFilter" class="mr-filter-select" onchange="searchModrinth()">
+                        <option value="relevance">Pertinence</option>
+                        <option value="downloads">Téléchargements</option>
+                        <option value="follows">Suivis</option>
+                        <option value="newest">Récents</option>
+                        <option value="updated">Mis à jour</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ── LISTE MODRINTH ── -->
+            <div class="addons-views-wrap">
+                <div id="view-browse" class="addon-view active">
+                    <div class="addon-grid-2col" id="modrinthList">
+                        <div class="mr-welcome" style="grid-column:1/-1;">
+                            <div class="mr-welcome-icon">🧩</div>
+                            <div class="mr-welcome-title">Explorer Modrinth</div>
+                            <div class="mr-welcome-sub">Recherche des mods, resource packs et shaders directement depuis Modrinth.</div>
+                            <button class="btn btn-login" style="margin-top:10px;padding:8px 20px;" onclick="searchModrinth()">Voir les populaires</button>
+                        </div>
+                    </div>
+                    <div id="mrPagination" class="mr-pagination" style="display:none;">
+                        <button class="btn btn-sq" id="mrPrevBtn" onclick="mrChangePage(-1)" disabled>‹</button>
+                        <span id="mrPageInfo" style="font-size:11px;color:var(--text-muted);"></span>
+                        <button class="btn btn-sq" id="mrNextBtn" onclick="mrChangePage(1)">›</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div id="pm-sh-list" class="item-list"></div>
-      </div>
 
-      <div class="tpane" id="tp-java-t">
-        <div class="callout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Ces paramètres écrasent les réglages globaux pour ce profil uniquement.</div>
-        <div class="form-row">
-          <div class="sg"><label class="sl">RAM min (Mo)</label><input class="si" type="number" id="pm-rmin" placeholder="Utilise global" min="256" step="256"/></div>
-          <div class="sg"><label class="sl">RAM max (Mo)</label><input class="si" type="number" id="pm-rmax" placeholder="Utilise global" min="512" step="256"/></div>
+        <!-- ── MOD DETAIL PANEL ── -->
+        <div id="mrDetailPanel" class="mr-detail-panel" style="display:none;">
+            <div class="mr-detail-header">
+                <button class="btn btn-sq" onclick="closeMrDetail()" style="font-size:16px;">←</button>
+                <div class="mr-detail-icon" id="mrDetailIcon"></div>
+                <div class="mr-detail-title-block">
+                    <div id="mrDetailName" style="font-size:15px;font-weight:700;color:var(--text-main);"></div>
+                    <div id="mrDetailAuthor" style="font-size:11px;color:var(--text-muted);"></div>
+                </div>
+                <button id="mrDetailInstallBtn" class="btn btn-login" style="margin-left:auto;" onclick="installFromDetail()">Installer</button>
+            </div>
+            <div class="mr-detail-body">
+                <div id="mrDetailStats" class="mr-detail-stats"></div>
+                <div id="mrDetailDesc" class="mr-detail-desc"></div>
+                <div class="mr-detail-section-title">Versions disponibles</div>
+                <div id="mrDetailVersions" class="mr-detail-versions"></div>
+            </div>
         </div>
-        <div class="sg"><label class="sl">Arguments JVM</label><input class="si" id="pm-jvm" placeholder="-XX:+UseG1GC -XX:MaxGCPauseMillis=50"/></div>
-        <div class="sg"><label class="sl">Dossier de jeu</label><input class="si" id="pm-gamedir" placeholder="AppData/Roaming/Mighty (défaut)"/></div>
-      </div>
     </div>
-    <div class="mft">
-      <button class="btn btn-ghost" onclick="closeOv('ov-profile')">Annuler</button>
-      <button class="btn btn-green" onclick="saveProfile()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Enregistrer
-      </button>
-    </div>
-  </div>
-</div>
 
-<!-- ═══ MODAL: MOD DETAIL ═══ -->
-<div class="ov" id="ov-mod" onclick="closeOvBg(event,'ov-mod')">
-  <div class="modal">
-    <div class="mhd">
-      <span class="mtitle" id="mod-detail-title">Mod</span>
-      <button class="mx" onclick="closeOv('ov-mod')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="mbody" id="mod-detail-body"></div>
-    <div class="mft">
-      <button class="btn btn-ghost" onclick="closeOv('ov-mod')">Fermer</button>
-      <button class="btn btn-green" id="mod-detail-add-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Ajouter au profil
-      </button>
-    </div>
-  </div>
-</div>
+    <!-- ════════════════════════════════════
+         PAGE PARAMÈTRES
+    ════════════════════════════════════ -->
+    <div class="page" id="page-settings">
+        <div class="settings-layout">
+            <div class="settings-sidebar">
+                <div class="settings-sidebar-title" style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);padding:0 4px;margin-bottom:6px;">Paramètres</div>
+                <div class="settings-tab active" data-tab="general" onclick="switchSettingsTab('general',this)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Général
+                </div>
 
-<!-- ═══ MODAL: ADD ITEM MANUAL ═══ -->
-<div class="ov" id="ov-item" onclick="closeOvBg(event,'ov-item')">
-  <div class="modal">
-    <div class="mhd">
-      <span class="mtitle" id="item-title">Ajouter</span>
-      <button class="mx" onclick="closeOv('ov-item')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="mbody">
-      <div class="sg"><label class="sl">Nom *</label><input class="si" id="item-name" placeholder="JourneyMap..."/></div>
-      <div class="sg"><label class="sl">Description</label><input class="si" id="item-desc" placeholder="Description..."/></div>
-      <div class="form-row">
-        <div class="sg"><label class="sl">Version</label><input class="si" id="item-ver" placeholder="1.0.0"/></div>
-        <div class="sg"><label class="sl">Auteur</label><input class="si" id="item-author" placeholder="TeamJM"/></div>
-      </div>
-    </div>
-    <div class="mft">
-      <button class="btn btn-ghost" onclick="closeOv('ov-item')">Annuler</button>
-      <button class="btn btn-green" onclick="confirmAddItem()">Ajouter</button>
-    </div>
-  </div>
-</div>
+                <div class="settings-tab" data-tab="java" onclick="switchSettingsTab('java',this)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 7h2v6H7zM11 7h2l2 3-2 3h-2V7z"/></svg>
+                    Java &amp; RAM
+                </div>
 
-<!-- ═══ CONFIRM ═══ -->
-<div class="ov" id="ov-cfm">
-  <div class="cfm-box">
-    <h3 id="cfm-title">Confirmer</h3>
-    <p id="cfm-msg">Êtes-vous sûr ?</p>
-    <div class="cfm-actions">
-      <button class="btn btn-ghost" onclick="closeOv('ov-cfm')">Annuler</button>
-      <button class="btn btn-danger" id="cfm-ok">Supprimer</button>
-    </div>
-  </div>
-</div>
+                <div class="settings-tab" data-tab="graphics" onclick="switchSettingsTab('graphics',this)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                    Graphismes
+                </div>
 
-<!-- ═══ MODAL: MICROSOFT LOGIN ═══ -->
-<div class="ov" id="ov-mslogin" onclick="closeOvBg(event,'ov-mslogin')">
-  <div class="modal" style="max-width:420px">
-    <div class="mhd">
-      <span class="mtitle" id="ms-modal-title">Connexion Microsoft</span>
-      <button class="mx" onclick="closeOv('ov-mslogin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-    </div>
-    <div class="mbody" id="ms-modal-body"></div>
-  </div>
-</div>
+                <div class="settings-tab" data-tab="network" onclick="switchSettingsTab('network',this)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    Réseau
+                </div>
 
-<!-- ═══ MODAL: CHOISIR PROFIL POUR MOD ═══ -->
-<div class="ov" id="ov-pick-profile" onclick="closeOvBg(event,'ov-pick-profile')">
-  <div class="modal" style="max-width:450px">
-    <div class="mhd">
-      <span class="mtitle">Ajouter à un profil</span>
-      <button class="mx" onclick="closeOv('ov-pick-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                <div class="settings-tab" data-tab="folders" onclick="switchSettingsTab('folders',this)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                    Dossiers
+                </div>
+
+                <div class="settings-tab" data-tab="about" onclick="switchSettingsTab('about',this)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    À propos
+                </div>
+            </div>
+            <div class="settings-content" id="settingsContent" style="background:var(--bg-inner);border-radius:var(--radius);border:1px solid var(--border);overflow-y:auto;padding:16px 18px;"></div>
+        </div>
     </div>
-    <div class="mbody">
-      <div style="font-size:12.5px;color:var(--text1)">Ajouter <strong id="pick-mod-name" style="color:var(--text0)"></strong> dans quel profil ?</div>
-      <div class="ppc-grid" id="ppc-grid"></div>
-      <div id="ppc-empty" class="empty" style="display:none;padding:18px">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        <p>Aucun profil — <span style="color:var(--accent);cursor:pointer;font-weight:700" onclick="closeOv('ov-pick-profile');openCreateProfile()">créez-en un d'abord</span></p>
-      </div>
+
+    <!-- ════════════════════════════════════
+         PAGE SKINS & CAPES
+    ════════════════════════════════════ -->
+    <div class="page" id="page-skincape"></div>
+
+    <!-- ════════════════════════════════════
+         PAGE SUPPORT
+    ════════════════════════════════════ -->
+    <div class="page" id="page-support">
+        <div style="display:flex;flex-direction:column;gap:12px;flex:1;overflow-y:auto;padding-right:2px;">
+            <div style="background:linear-gradient(135deg,rgba(124,92,191,0.15),rgba(91,141,239,0.08));border:1px solid rgba(124,92,191,0.25);border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;">
+                <div style="width:44px;height:44px;background:rgba(124,92,191,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9B7DD4" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div>
+                    <div style="font-size:14px;font-weight:700;color:#f0f0f2;margin-bottom:2px;">Centre de support Mighty</div>
+                    <div style="font-size:11px;color:#606068;">Signale un bug, rejoins la communauté ou consulte la documentation.</div>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+                <div onclick="window.electronAPI?.openExternal('https://discord.gg/mighty') || window.open('https://discord.gg/mighty','_blank')" style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;gap:10px;align-items:flex-start;" onmouseover="this.style.borderColor='#5865F2';this.style.background='rgba(88,101,242,0.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg-card)'">
+                    <div style="width:36px;height:36px;background:rgba(88,101,242,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg></div>
+                    <div><div style="font-size:13px;font-weight:700;color:#f0f0f2;">Discord</div><div style="font-size:10px;color:#606068;margin-top:2px;">Rejoindre la communauté</div></div>
+                    <div style="font-size:10px;color:#5865F2;font-weight:600;">discord.gg/mighty →</div>
+                </div>
+                <div onclick="window.electronAPI?.openExternal('https://mightylauncher.net') || window.open('https://mightylauncher.net','_blank')" style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;gap:10px;align-items:flex-start;" onmouseover="this.style.borderColor='#9B7DD4';this.style.background='rgba(124,92,191,0.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg-card)'">
+                    <div style="width:36px;height:36px;background:rgba(124,92,191,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9B7DD4" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+                    <div><div style="font-size:13px;font-weight:700;color:#f0f0f2;">Site web</div><div style="font-size:10px;color:#606068;margin-top:2px;">Documentation &amp; news</div></div>
+                    <div style="font-size:10px;color:#9B7DD4;font-weight:600;">mightylauncher.net →</div>
+                </div>
+                <div onclick="window.electronAPI?.openExternal('https://github.com/mighty-client/issues/new') || window.open('https://github.com/mighty-client/issues/new','_blank')" style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;gap:10px;align-items:flex-start;" onmouseover="this.style.borderColor='#f0f0f2';this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg-card)'">
+                    <div style="width:36px;height:36px;background:rgba(255,255,255,0.07);border-radius:8px;display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#f0f0f2"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></div>
+                    <div><div style="font-size:13px;font-weight:700;color:#f0f0f2;">Signaler un bug</div><div style="font-size:10px;color:#606068;margin-top:2px;">GitHub Issues</div></div>
+                    <div style="font-size:10px;color:#a0a0aa;font-weight:600;">github.com/mighty →</div>
+                </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e05c5c" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span style="font-size:12px;font-weight:700;color:#f0f0f2;">Signalement rapide</span></div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <select id="bugType" style="background:var(--bg-inner);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text-main);font-family:'Inter',sans-serif;font-size:11px;outline:none;width:100%;cursor:pointer;">
+                        <option>Type de problème...</option><option>Crash au lancement</option><option>Problème de connexion</option><option>Mod ne se charge pas</option><option>Interface buggée</option><option>Performance</option><option>Autre</option>
+                    </select>
+                    <textarea id="bugDesc" placeholder="Décris le problème brièvement..." style="background:var(--bg-inner);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--text-main);font-family:'Inter',sans-serif;font-size:11px;outline:none;width:100%;resize:none;height:64px;line-height:1.5;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#606068;cursor:pointer;flex:1;"><input type="checkbox" style="accent-color:var(--accent);"> Inclure les logs système</label>
+                        <button onclick="submitBug()" style="background:rgba(220,70,60,0.15);border:1px solid rgba(220,70,60,0.3);color:#e05c5c;padding:7px 16px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;transition:background 0.15s;" onmouseover="this.style.background='rgba(220,70,60,0.25)'" onmouseout="this.style.background='rgba(220,70,60,0.15)'">Envoyer →</button>
+                    </div>
+                </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;">
+                <div style="font-size:12px;font-weight:700;color:#f0f0f2;margin-bottom:10px;">Questions fréquentes</div>
+                <div style="display:flex;flex-direction:column;gap:0;">
+                    <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="padding:9px 0;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;color:#a0a0aa;cursor:pointer;display:flex;justify-content:space-between;" onmouseover="this.style.color='#f0f0f2'" onmouseout="this.style.color='#a0a0aa'">Minecraft ne se lance pas <span>+</span></div>
+                    <div style="display:none;padding:8px 0 10px;font-size:11px;color:#606068;line-height:1.6;border-bottom:1px solid var(--border);">Vérifie que Java 21 est bien installé et que tu as alloué au moins 2 Go de RAM dans les paramètres.</div>
+                    <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="padding:9px 0;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;color:#a0a0aa;cursor:pointer;display:flex;justify-content:space-between;" onmouseover="this.style.color='#f0f0f2'" onmouseout="this.style.color='#a0a0aa'">Mes mods ne se chargent pas <span>+</span></div>
+                    <div style="display:none;padding:8px 0 10px;font-size:11px;color:#606068;line-height:1.6;border-bottom:1px solid var(--border);">Assure-toi que les mods sont compatibles avec ta version de Minecraft et que Forge/Fabric est activé.</div>
+                    <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="padding:9px 0;font-size:11px;font-weight:600;color:#a0a0aa;cursor:pointer;display:flex;justify-content:space-between;" onmouseover="this.style.color='#f0f0f2'" onmouseout="this.style.color='#a0a0aa'">Comment mettre à jour le launcher <span>+</span></div>
+                    <div style="display:none;padding:8px 0 0;font-size:11px;color:#606068;line-height:1.6;">Active les mises à jour automatiques dans Paramètres &gt; Général ou télécharge la dernière version sur le site.</div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="mft">
-      <button class="btn btn-ghost" onclick="closeOv('ov-pick-profile')">Annuler</button>
-      <button class="btn btn-green" onclick="confirmPickProfile()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Ajouter au profil
-      </button>
+
+    <!-- ════════════════════════════════════
+         OVERLAY CHAT
+    ════════════════════════════════════ -->
+    <div id="chatOverlay" style="display:none;position:absolute;inset:0;z-index:250;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);border-radius:14px;align-items:stretch;justify-content:center;">
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+            <div id="chatPanel" style="width:680px;height:460px;background:#1e1e22;border:1px solid rgba(255,255,255,0.1);border-radius:12px;display:flex;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.9);">
+                <div style="width:200px;flex-shrink:0;background:#18181c;border-right:1px solid rgba(255,255,255,0.07);display:flex;flex-direction:column;">
+                    <div style="padding:14px 14px 10px;border-bottom:1px solid rgba(255,255,255,0.07);">
+                        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#606068;margin-bottom:8px;">Messages</div>
+                        <input id="friendSearch" type="text" placeholder="Rechercher..." style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:6px 10px;color:#f0f0f2;font-size:11px;outline:none;font-family:'Inter',sans-serif;" oninput="filterChatFriends(this.value)">
+                    </div>
+                    <div id="chatFriendList" style="flex:1;overflow-y:auto;padding:6px 0;"></div>
+                    <div style="padding:10px 12px;border-top:1px solid rgba(255,255,255,0.07);">
+                        <button onclick="closeChat()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:#a0a0aa;padding:7px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.09)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">Fermer</button>
+                    </div>
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;background:#1e1e22;">
+                    <div id="chatHeader" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.07);background:#18181c;min-height:52px;"><div style="color:#606068;font-size:12px;">Sélectionne un ami pour chatter</div></div>
+                    <div id="chatMessages" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth;"></div>
+                    <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:8px;align-items:center;">
+                        <div style="flex:1;display:flex;align-items:center;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0 10px;transition:border-color 0.15s;" id="chatInputWrap">
+                            <input id="chatInput" type="text" placeholder="Envoyer un message..." style="flex:1;background:none;border:none;color:#f0f0f2;font-family:'Inter',sans-serif;font-size:12px;outline:none;padding:8px 0;" onkeydown="if(event.key==='Enter')sendChatMsg()" onfocus="document.getElementById('chatInputWrap').style.borderColor='var(--accent)'" onblur="document.getElementById('chatInputWrap').style.borderColor='rgba(255,255,255,0.08)'">
+                            <button onclick="sendChatMsg()" style="background:none;border:none;cursor:pointer;padding:4px;color:var(--accent);display:flex;align-items:center;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
+
+    <!-- ════════════════════════════════════
+         MODAL SKIN
+    ════════════════════════════════════ -->
+    <div class="modal-overlay" id="skinModal">
+        <div class="modal-box" style="width:760px;">
+            <div class="modal-head">
+                <div class="modal-title">Personnaliser mon Skin</div>
+                <button class="modal-close" onclick="closeSkinModal()">×</button>
+            </div>
+            <div class="modal-body" style="display:grid;grid-template-columns:260px 1fr;gap:16px;padding:16px 18px;">
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <div style="background:var(--bg-inner);border:1px solid var(--border);border-radius:var(--radius);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;min-height:300px;">
+                        <canvas id="skinCanvas" width="240" height="300" style="cursor:grab;display:block;"></canvas>
+                        <div style="position:absolute;bottom:7px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--text-muted);white-space:nowrap;pointer-events:none;">Glisser pour tourner · Molette zoom</div>
+                    </div>
+                    <div style="background:var(--bg-inner);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;">
+                        <div style="font-size:12px;font-weight:700;color:var(--text-main);" id="skinPlayerName">MightyPlayer</div>
+                        <div style="font-size:9px;color:var(--text-muted);margin-top:1px;" id="skinPlayerUUID">f498513ce8c84773be26ecfc7ed5185d</div>
+                    </div>
+                    <div style="background:var(--bg-inner);border:1px solid var(--border);border-radius:var(--radius);padding:7px 10px;display:flex;align-items:center;gap:5px;">
+                        <span style="font-size:10px;color:var(--text-muted);font-weight:600;">Animation</span>
+                        <button class="anim-btn active-anim" onclick="setAnim('walk',this)">Marche</button>
+                        <button class="anim-btn" onclick="setAnim('run',this)">Course</button>
+                        <button class="anim-btn" onclick="setAnim('idle',this)">Immobile</button>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div style="background:var(--bg-inner);border:1px solid var(--border);border-radius:var(--radius);padding:16px;">
+                        <div style="font-size:14px;font-weight:700;color:var(--text-main);margin-bottom:4px;">Mon Skin</div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">PNG 64x64 — glissez ou cliquez pour choisir</div>
+                        <div id="skinDropZone" onclick="document.getElementById('skinFileInput').click()" style="border:2px dashed rgba(255,255,255,0.12);border-radius:10px;padding:28px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:border-color 0.15s,background 0.15s;margin-bottom:14px;" onmouseover="this.style.borderColor='rgba(124,92,191,0.5)';this.style.background='rgba(124,92,191,0.04)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.background='transparent'" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor='rgba(255,255,255,0.12)'" ondrop="handleSkinDrop(event)">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.4);">Glisser votre skin ici</div>
+                            <div style="font-size:11px;color:var(--text-muted);">ou cliquer pour choisir un PNG</div>
+                        </div>
+                        <input type="file" id="skinFileInput" accept=".png" style="display:none" onchange="handleSkinFile(this.files[0])">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+                            <span style="font-size:12px;color:var(--text-muted);font-weight:600;">Modèle :</span>
+                            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:var(--text-main);font-weight:600;"><input type="radio" name="skinModel" value="steve" checked style="accent-color:var(--accent);"> Steve</label>
+                            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:12px;color:var(--text-main);font-weight:600;"><input type="radio" name="skinModel" value="alex" style="accent-color:var(--accent);"> Alex</label>
+                        </div>
+                        <button onclick="applySkin()" style="background:var(--accent);border:none;color:#fff;width:100%;padding:11px;border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:background 0.15s;" onmouseover="this.style.background='#9B7DD4'" onmouseout="this.style.background='var(--accent)'">Appliquer le skin</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════
+         MODAL NOUVEAU PROFIL
+    ════════════════════════════════════ -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-box">
+            <div class="modal-head">
+                <div class="modal-title" id="profileModalTitle">Nouveau profil</div>
+                <button class="modal-close" onclick="closeProfileModal()">×</button>
+            </div>
+            <div class="modal-body">
+
+                <div id="modalTabGeneral">
+                    <div class="modal-row"><div class="modal-label">Nom du profil</div><input class="modal-input" id="profileNameInput" type="text" value="Nouveau Profil" placeholder="Mon profil..."></div>
+                    <div class="modal-grid2">
+                        <div>
+                            <div class="modal-label">Version de Minecraft</div>
+                            <select class="modal-select" id="profileVersionSelect"></select>
+                            <div id="versionPreview" style="margin-top:8px;height:60px;border-radius:8px;overflow:hidden;position:relative;background:#1a1a2a;border:1px solid var(--border);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Loader automatique (invisible) — Fabric ≥1.14, Vanilla <1.14 -->
+                    <div id="profileModalLoaderGrid" style="display:none;">
+                        <div class="pm-loader-opt selected" data-loader="fabric"></div>
+                        <div class="pm-loader-opt" data-loader="vanilla"></div>
+                    </div>
+                    <!-- Badge loader affiché dynamiquement -->
+                    <div style="display:flex;align-items:center;gap:6px;margin-top:-4px;">
+                        <div id="loaderBadge" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:rgba(196,164,224,0.12);border:1px solid rgba(196,164,224,0.3);">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#c4a4e0" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M12 8v8"/></svg>
+                            <span id="loaderBadgeText" style="font-size:10px;font-weight:700;color:#c4a4e0;">Fabric</span>
+                        </div>
+                        <span style="font-size:10px;color:var(--text-muted);">sélectionné automatiquement</span>
+                    </div>
+
+                    <div class="modal-row"><div class="modal-label">Couleur</div>
+                        <div class="color-grid" id="profileColorGrid">
+                            <div class="color-opt selected" data-color="#7C5CBF" style="background:#7C5CBF;" onclick="selectProfileColor(this)"></div><div class="color-opt" data-color="#22c55e" style="background:#22c55e;" onclick="selectProfileColor(this)"></div><div class="color-opt" data-color="#e05c5c" style="background:#e05c5c;" onclick="selectProfileColor(this)"></div><div class="color-opt" data-color="#e0a030" style="background:#e0a030;" onclick="selectProfileColor(this)"></div><div class="color-opt" data-color="#3b82f6" style="background:#3b82f6;" onclick="selectProfileColor(this)"></div><div class="color-opt" data-color="#ec4899" style="background:#ec4899;" onclick="selectProfileColor(this)"></div><div class="color-opt" data-color="#06b6d4" style="background:#06b6d4;" onclick="selectProfileColor(this)"></div><div class="color-opt" data-color="#f97316" style="background:#f97316;" onclick="selectProfileColor(this)"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeProfileModal()" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);padding:8px 18px;border-radius:7px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Annuler</button>
+                <button onclick="saveProfileModal()" style="background:var(--accent);border:none;color:#fff;padding:8px 20px;border-radius:7px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#9B7DD4'" onmouseout="this.style.background='var(--accent)'">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════
+         MODAL AJOUTER UN SERVEUR
+    ════════════════════════════════════ -->
+    <div class="modal-overlay" id="serverModal">
+        <div class="modal-box" style="width:380px;">
+            <div class="modal-head">
+                <div class="modal-title" id="serverModalTitle">Ajouter un serveur</div>
+                <button class="modal-close" onclick="closeServerModal()">×</button>
+            </div>
+            <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;">
+                <div><div class="modal-label">Nom du serveur</div><input class="modal-input" id="serverNameInput" type="text" placeholder="Ex: Hypixel"></div>
+                <div><div class="modal-label">Adresse IP</div><input class="modal-input" id="serverIPInput" type="text" placeholder="Ex: mc.hypixel.net"></div>
+                <div>
+                    <div class="modal-label">Couleur</div>
+                    <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+                        <div id="serverColorPreview" style="width:32px;height:32px;border-radius:7px;background:#22c55e;cursor:pointer;border:2px solid rgba(255,255,255,0.15);flex-shrink:0;" onclick="document.getElementById('serverColorPicker').click()"></div>
+                        <input type="color" id="serverColorPicker" value="#22c55e" style="display:none" oninput="document.getElementById('serverColorPreview').style.background=this.value;">
+                        <div class="color-grid" id="serverColorGrid" style="margin-top:0;">
+                            <div class="color-opt selected" data-color="#22c55e" style="background:#22c55e;" onclick="pickServerColor(this,'#22c55e')"></div><div class="color-opt" data-color="#ff6a00" style="background:#ff6a00;" onclick="pickServerColor(this,'#ff6a00')"></div><div class="color-opt" data-color="#8844ff" style="background:#8844ff;" onclick="pickServerColor(this,'#8844ff')"></div><div class="color-opt" data-color="#00b4b4" style="background:#00b4b4;" onclick="pickServerColor(this,'#00b4b4')"></div><div class="color-opt" data-color="#e05c5c" style="background:#e05c5c;" onclick="pickServerColor(this,'#e05c5c')"></div><div class="color-opt" data-color="#c8b400" style="background:#c8b400;" onclick="pickServerColor(this,'#c8b400')"></div><div class="color-opt" data-color="#3b82f6" style="background:#3b82f6;" onclick="pickServerColor(this,'#3b82f6')"></div><div class="color-opt" data-color="#ec4899" style="background:#ec4899;" onclick="pickServerColor(this,'#ec4899')"></div>
+                        </div>
+                    </div>
+                    <div style="font-size:10px;color:var(--text-muted);margin-top:6px;">Couleur de l'icône et du fond</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeServerModal()" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-muted);padding:8px 18px;border-radius:7px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Annuler</button>
+                <button onclick="saveServerModal()" style="background:#22c55e;border:none;color:#fff;padding:8px 20px;border-radius:7px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast global -->
+    <div class="toast" id="toast"></div>
 
 
-<!-- ── ACCOUNTS DROPDOWN ── -->
-<div class="acct-dd" id="acct-dd" onclick="event.stopPropagation()">
-  <div style="padding:8px 14px 4px;font-size:10px;font-weight:800;color:var(--text2);letter-spacing:1.2px;text-transform:uppercase">Comptes</div>
-  <div id="acct-list"></div>
-  <div class="acct-sep"></div>
-  <div class="acct-btn" onclick="closeAcctDD();startMSAuth()">
-    <svg viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
-    Ajouter un compte Microsoft
-  </div>
-  <div class="acct-btn" onclick="closeAcctDD();openOfflineModeModal()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    Ajouter compte hors-ligne
-  </div>
-</div>
-</body>
 
-<!-- ═══ JS ═══ -->
-<!-- 1. État global, constantes, utilitaires — doit être chargé EN PREMIER -->
-<script src="js/state.js"></script>
-<!-- 2. Liste des versions Minecraft (fallback) -->
-<script src="js/versions.js"></script>
-<!-- 3. Comptes (ACCOUNTS / MS déclarés ici, avant init) -->
-<script src="js/accounts.js"></script>
-<!-- 4. Page Play, navigation, hero, launch -->
-<script src="js/play.js"></script>
-<!-- 5. Profils — CRUD, import/export, versions dropdown -->
+
+</div><!-- /.launcher-container -->
+
+<!-- ════════════════════════════════════
+     SCRIPTS JS (ordre de dépendance)
+════════════════════════════════════ -->
+<!-- Firebase SDK (compat v9) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<!-- Mighty Scripts -->
+
+<script src="js/firebase.js"></script>
+<script src="js/loader-ui.js"></script>
+    <script src="js/accounts.js"></script>
+<script src="js/addons.js"></script>
+<script src="js/settings.js"></script>
 <script src="js/profiles.js"></script>
-<!-- 6. Modrinth — recherche, grille, détail, picker -->
-<script src="js/modrinth.js"></script>
-<!-- 7. Overlays, confirm, init (doit être EN DERNIER) -->
+<script src="js/launcher.js"></script>
+<script src="js/home.js"></script>
+<script src="js/skin-cape.js"></script>
+<script src="js/servers.js"></script>
+<script src="js/wizard.js"></script>
 <script src="js/init.js"></script>
+
+
+
+
+
+
+<!-- Initialisation -->
+<script>
+function submitBug() {
+    const typeEl = document.getElementById('bugType');
+    const desc   = document.getElementById('bugDesc').value.trim();
+    if (!desc) { showToast("Décris le problème d'abord.", 'error'); return; }
+    const type  = (typeEl && typeEl.value !== 'Type de problème...') ? typeEl.value : 'Bug';
+    const title = encodeURIComponent('[' + type + '] ' + desc.substring(0, 60));
+    const body  = encodeURIComponent('**Type :** ' + type + '\n\n**Description :**\n' + desc + '\n\n**Version :** Mighty Client 2.0.0');
+    const url   = 'https://github.com/mighty-client/issues/new?title=' + title + '&body=' + body + '&labels=bug';
+    window.electronAPI?.openExternal(url) || window.open(url, '_blank');
+    document.getElementById('bugDesc').value = '';
+    showToast('GitHub Issues ouvert avec ton signalement.', 'success');
+}
+
+
+
+// ── Wrappers skin modal ──────────────────────────────────────
+function openSkinModal() {
+    const m = document.getElementById('skinModal');
+    if (m) m.classList.add('open');
+    if (typeof initSkinCapePage === 'function') initSkinCapePage();
+}
+function closeSkinModal() {
+    const m = document.getElementById('skinModal');
+    if (m) m.classList.remove('open');
+    if (typeof stopSkin3D === 'function') stopSkin3D();
+}
+function setAnim(anim, btn) {
+    document.querySelectorAll('.anim-btn').forEach(b => b.classList.remove('active-anim'));
+    if (btn) btn.classList.add('active-anim');
+    if (typeof setSCaAnim === 'function') setSCaAnim(anim);
+}
+function handleSkinFile(file) {
+    if (typeof handleSCFile === 'function') handleSCFile(file);
+}
+function handleSkinDrop(e) {
+    e.preventDefault();
+    const f = e.dataTransfer?.files?.[0];
+    if (f && typeof handleSCFile === 'function') handleSCFile(f);
+}
+function applySkin() {
+    if (typeof applySCChanges === 'function') applySCChanges();
+    else showToast('Fonctionnalité skin bientôt disponible.', 'info');
+}
+window.openSkinModal  = openSkinModal;
+window.closeSkinModal = closeSkinModal;
+window.setAnim        = setAnim;
+window.handleSkinFile = handleSkinFile;
+window.handleSkinDrop = handleSkinDrop;
+window.applySkin      = applySkin;
+
+// ── Empêcher la navigation hors de l'app (clic sur lien) ────
+document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    const href = a.getAttribute('href');
+    if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+        e.preventDefault();
+        window.electronAPI?.openExternal(href) || window.open(href, '_blank');
+    }
+});
+
+window.addEventListener('DOMContentLoaded', async () => {
+
+    // Initialiser le système multi-comptes (connexion Microsoft)
+    if (typeof initAccounts === 'function') await initAccounts();
+
+    // Initialiser Firebase (système d'amis)
+    if (typeof initFirebase === 'function') initFirebase();
+
+    await initSettings();
+    await initProfiles();
+    if (typeof initAddons   === 'function') await initAddons();
+    if (typeof initServers  === 'function') await initServers();
+
+    if (typeof renderNews     === 'function') renderNews();
+    if (typeof renderProfiles === 'function') renderProfiles();
+
+    // Initialiser le système de lancement
+    if (typeof initLauncher === 'function') initLauncher();
+
+    const lcBg = document.getElementById('lcVersionBg');
+    if (lcBg) { lcBg.style.background = 'linear-gradient(135deg,#1a3a1a,#2d6a2d,#1a5c3a)'; lcBg.classList.add('visible'); }
+
+    const activeTab = document.querySelector('.nav-tab.active');
+    const initialPage = activeTab ? activeTab.getAttribute('data-page') : 'home';
+    showPage(initialPage);
+
+    if (typeof runBootSequence === 'function') runBootSequence();
+});
+</script>
 
 </body>
 </html>

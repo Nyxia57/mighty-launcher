@@ -1,0 +1,11 @@
+/* inter-local.css
+   Charge Inter depuis les polices système ou une stack de fallback.
+   Pas de requête réseau — compatible Electron CSP strict. */
+
+:root {
+    --font-main: 'Inter', 'Segoe UI', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+}
+
+body, button, input, select, textarea {
+    font-family: var(--font-main);
+}

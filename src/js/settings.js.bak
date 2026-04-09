@@ -1,0 +1,340 @@
+/* ============================================================
+   settings.js — Paramètres du launcher
+   Mighty Client v2.0.0
+   ============================================================
+   - Navigation entre onglets (Général, Java, Graphismes, À propos)
+   - Rendu dynamique du contenu de chaque onglet
+   - Sauvegarde persistante via electronAPI.saveConfig / loadConfig
+   ============================================================ */
+
+'use strict';
+
+// ── ÉTAT DES PARAMÈTRES ──────────────────────────────────────
+
+const DEFAULT_SETTINGS = {
+    // Général
+    language:       'fr',
+    theme:          'dark',
+    autoUpdate:     true,
+    closeOnLaunch:  false,
+    keepLogs:       true,
+    discordRpc:     true,
+
+
+};
+
+let _settings = { ...DEFAULT_SETTINGS };
+let _currentTab = 'general';
+
+// ── CHARGEMENT / SAUVEGARDE ──────────────────────────────────
+
+async function loadSettings() {
+    try {
+        if (window.electronAPI?.loadConfig) {
+            const cfg = await window.electronAPI.loadConfig();
+            if (cfg && typeof cfg === 'object') {
+                // ── FIX PERSISTANCE : les settings sont stockés sous cfg.settings
+                // pour éviter toute collision avec les autres clés du config (installPath, profiles, ram, etc.)
+                const saved = cfg.settings && typeof cfg.settings === 'object' ? cfg.settings : cfg;
+                _settings = { ...DEFAULT_SETTINGS, ...saved };
+            }
+        } else {
+            const saved = localStorage.getItem('mighty-settings');
+            if (saved) _settings = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+        }
+    } catch (e) {
+        console.warn('[Settings] Chargement échoué :', e);
+    }
+}
+
+async function saveSettings() {
+    try {
+        // ── FIX PERSISTANCE : stocker sous une clé dédiée "settings"
+        // pour éviter toute collision avec installPath, profiles, ram, etc.
+        const settingsOnly = {};
+        Object.keys(DEFAULT_SETTINGS).forEach(k => {
+            settingsOnly[k] = _settings[k] !== undefined ? _settings[k] : DEFAULT_SETTINGS[k];
+        });
+
+        if (window.electronAPI?.saveConfig) {
+            await window.electronAPI.saveConfig({ settings: settingsOnly });
+        } else {
+            localStorage.setItem('mighty-settings', JSON.stringify(settingsOnly));
+        }
+        showToast('Paramètres sauvegardés', 'success');
+    } catch (e) {
+        console.warn('[Settings] Sauvegarde échouée :', e);
+        showToast('Erreur lors de la sauvegarde', 'error');
+    }
+}
+
+function getSetting(key) {
+    return _settings[key] !== undefined ? _settings[key] : DEFAULT_SETTINGS[key];
+}
+
+function setSetting(key, value) {
+    _settings[key] = value;
+}
+
+// ── NAVIGATION ENTRE ONGLETS ─────────────────────────────────
+
+function switchSettingsTab(tabId, el) {
+    // Mettre à jour les onglets sidebar
+    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+    if (el) el.classList.add('active');
+    else {
+        const target = document.querySelector(`.settings-tab[data-tab="${tabId}"]`);
+        if (target) target.classList.add('active');
+    }
+    _currentTab = tabId;
+    renderSettings(tabId);
+}
+
+// ── RENDU DES ONGLETS ────────────────────────────────────────
+
+function renderSettings(tabId) {
+    const container = document.getElementById('settingsContent');
+    if (!container) return;
+
+    _currentTab = tabId || _currentTab;
+    container.innerHTML = '';
+
+    switch (_currentTab) {
+        case 'general':  container.innerHTML = renderGeneral();  break;
+        case 'about':    container.innerHTML = renderAbout();    break;
+    }
+
+    // Brancher les événements après rendu
+    bindSettingsEvents();
+}
+
+// ── HELPERS HTML ─────────────────────────────────────────────
+
+function row(label, desc, control) {
+    return `
+    <div class="settings-row">
+        <div>
+            <div class="settings-row-label">${label}</div>
+            ${desc ? `<div class="settings-row-desc">${desc}</div>` : ''}
+        </div>
+        <div class="settings-row-control">${control}</div>
+    </div>`;
+}
+
+function toggle(key) {
+    const checked = getSetting(key) ? 'checked' : '';
+    return `<label class="toggle-switch">
+        <input type="checkbox" data-key="${key}" ${checked}>
+        <span class="toggle-track"></span>
+        <span class="toggle-thumb"></span>
+    </label>`;
+}
+
+function select(key, options) {
+    const val = getSetting(key);
+    const opts = options.map(([v, l]) =>
+        `<option value="${v}" ${val === v ? 'selected' : ''}>${l}</option>`
+    ).join('');
+    return `<select class="settings-select" data-key="${key}">${opts}</select>`;
+}
+
+function numberInput(key, min, max, step = 1, suffix = '') {
+    return `<div style="display:flex;align-items:center;gap:6px;">
+        <input type="number" class="settings-input" data-key="${key}"
+            value="${getSetting(key)}" min="${min}" max="${max}" step="${step}"
+            style="width:70px;text-align:center;">
+        ${suffix ? `<span style="font-size:11px;color:var(--text-muted)">${suffix}</span>` : ''}
+    </div>`;
+}
+
+function slider(key, min, max, step, suffix = '') {
+    const val = getSetting(key);
+    return `<div style="display:flex;align-items:center;gap:8px;">
+        <input type="range" class="settings-slider" data-key="${key}"
+            value="${val}" min="${min}" max="${max}" step="${step}">
+        <span class="settings-slider-val" data-val-for="${key}" style="font-size:11px;color:var(--text-sub);min-width:36px;text-align:right;">${val}${suffix}</span>
+    </div>`;
+}
+
+function textInput(key, placeholder = '') {
+    return `<input type="text" class="settings-input" data-key="${key}"
+        value="${getSetting(key)}" placeholder="${placeholder}"
+        style="width:220px;">`;
+}
+
+function section(title, ...rows) {
+    return `<div class="settings-section" style="margin-bottom:16px;">
+        <div class="settings-section-title">${title}</div>
+        ${rows.join('')}
+    </div>`;
+}
+
+function saveBtn() {
+    return `<div style="display:flex;justify-content:flex-end;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+        <button id="settingsSaveBtn" class="btn btn-login" style="padding:7px 22px;font-size:12px;display:flex;align-items:center;gap:7px;transition:all 0.2s;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Sauvegarder
+        </button>
+    </div>`;
+}
+
+// ── ONGLET GÉNÉRAL ───────────────────────────────────────────
+
+function renderGeneral() {
+    return section('Launcher',
+        row('Langue', 'Langue de l\'interface',
+            select('language', [['fr','Français'],['en','English'],['de','Deutsch'],['es','Español']])
+        ),
+        row('Mise à jour automatique', 'Vérifie et installe les mises à jour au démarrage',
+            toggle('autoUpdate')
+        ),
+        row('Fermer au lancement', 'Ferme le launcher quand Minecraft démarre',
+            toggle('closeOnLaunch')
+        ),
+        row('Conserver les logs', 'Garde un historique des logs de lancement',
+            toggle('keepLogs')
+        ),
+        row('Discord Rich Presence', 'Affiche ton activité Minecraft sur Discord',
+            toggle('discordRpc')
+        )
+    ) + saveBtn();
+}
+
+// ── ONGLET JAVA ──────────────────────────────────────────────
+
+function renderAbout() {
+    return `
+    <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:16px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;">
+            <img src="assets/icons/icon.png" alt="Mighty Client" style="width:48px;height:48px;flex-shrink:0;border-radius:10px;"/>
+            <div>
+                <div style="font-size:16px;font-weight:800;letter-spacing:2px;color:#f0f0f2;">MIGHTY CLIENT</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">Version 2.0.0 — Build 2026</div>
+            </div>
+        </div>
+        <div class="settings-section">
+            <div class="settings-section-title">Informations</div>
+            ${row('Version', null, '<span style="font-size:12px;color:var(--text-sub);font-weight:600;">2.0.0</span>')}
+            ${row('Environnement', null, '<span style="font-size:12px;color:var(--text-sub);" id="aboutEnv">—</span>')}
+            ${row('Minecraft supporté', null, '<span style="font-size:12px;color:var(--text-sub);">1.0 → 1.21.11</span>')}
+        </div>
+        <div class="settings-section">
+            <div class="settings-section-title">Liens</div>
+            ${row('Site officiel', null, `<button class="btn" onclick="(window.electronAPI?.openExternal||window.open)('https://mightylauncher.net')" style="font-size:11px;padding:5px 12px;">mightylauncher.net</button>`)}
+            ${row('Code source', null, `<button class="btn" onclick="(window.electronAPI?.openExternal||window.open)('https://github.com/mighty-client')" style="font-size:11px;padding:5px 12px;">GitHub</button>`)}
+            ${row('Discord', null, `<button class="btn" onclick="(window.electronAPI?.openExternal||window.open)('https://discord.gg/mighty')" style="font-size:11px;padding:5px 12px;">Rejoindre</button>`)}
+        </div>
+        <div style="padding:10px 0;text-align:center;">
+            <div style="font-size:10px;color:var(--text-muted);">Fait avec soin pour la communauté Minecraft</div>
+        </div>
+    </div>`;
+}
+
+// ── BINDING DES ÉVÉNEMENTS ───────────────────────────────────
+
+function bindSettingsEvents() {
+    // Toggles
+    document.querySelectorAll('#settingsContent input[type="checkbox"][data-key]').forEach(el => {
+        el.addEventListener('change', () => {
+            setSetting(el.dataset.key, el.checked);
+        });
+    });
+
+    // Selects
+    document.querySelectorAll('#settingsContent select[data-key]').forEach(el => {
+        el.addEventListener('change', () => {
+            setSetting(el.dataset.key, el.value);
+        });
+    });
+
+    // Number inputs
+    document.querySelectorAll('#settingsContent input[type="number"][data-key]').forEach(el => {
+        el.addEventListener('input', () => {
+            const v = parseFloat(el.value);
+            if (!isNaN(v)) setSetting(el.dataset.key, v);
+        });
+    });
+
+    // Sliders — mise à jour temps réel du label
+    document.querySelectorAll('#settingsContent input[type="range"][data-key]').forEach(el => {
+        el.addEventListener('input', () => {
+            const v = parseFloat(el.value);
+            setSetting(el.dataset.key, v);
+            const label = document.querySelector(`.settings-slider-val[data-val-for="${el.dataset.key}"]`);
+            if (label) {
+                const suffix = label.textContent.replace(/[\d.]/g, '');
+                label.textContent = v + suffix;
+            }
+        });
+    });
+
+    // Text inputs
+    document.querySelectorAll('#settingsContent input[type="text"][data-key]').forEach(el => {
+        el.addEventListener('input', () => {
+            setSetting(el.dataset.key, el.value);
+        });
+    });
+
+    // À propos : afficher la version Electron si dispo
+    const aboutEnv = document.getElementById('aboutEnv');
+    if (aboutEnv) {
+        aboutEnv.textContent = window.electronAPI ? 'Electron (Desktop)' : 'Navigateur';
+    }
+
+    // Bouton Sauvegarder
+    const saveButton = document.getElementById('settingsSaveBtn');
+    if (saveButton) {
+        saveButton.addEventListener('click', async () => {
+            saveButton.disabled = true;
+            saveButton.innerHTML = `
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="animation:spin 0.6s linear infinite">
+                    <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+                    <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+                    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+                </svg>
+                Sauvegarde...`;
+            saveButton.style.opacity = '0.7';
+
+            await saveSettings();
+
+            // Feedback visuel succès
+            saveButton.innerHTML = `
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Sauvegardé !`;
+            saveButton.style.opacity = '1';
+            saveButton.style.background = 'rgba(74,222,128,0.2)';
+            saveButton.style.borderColor = 'rgba(74,222,128,0.4)';
+            saveButton.style.color = '#4ade80';
+
+            setTimeout(() => {
+                saveButton.disabled = false;
+                saveButton.innerHTML = `
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                        <polyline points="17 21 17 13 7 13 7 21"/>
+                        <polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                    Sauvegarder`;
+                saveButton.style.background = '';
+                saveButton.style.borderColor = '';
+                saveButton.style.color = '';
+            }, 2000);
+        });
+    }
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+
+async function initSettings() {
+    await loadSettings();
+    renderSettings('general');
+}
+
+// ── EXPOSITION GLOBALE (onclick inline dans innerHTML) ────────
+window.saveSettings        = saveSettings;
+window.renderSettings      = renderSettings;
+window.switchSettingsTab   = switchSettingsTab;
+window.initSettings        = initSettings;

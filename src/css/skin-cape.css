@@ -1,0 +1,347 @@
+/* ============================================================
+   skin-cape.css — Styles pour la page Skins & Capes
+   Mighty Client v2.0.0
+   ============================================================ */
+
+/* ── Layout principal ─────────────────────────────────────── */
+.sc-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 14px;
+    flex: 1;
+    overflow: hidden;
+    height: 100%;
+}
+
+.sc-left {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.sc-right {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+/* ── Viewer card ──────────────────────────────────────────── */
+.sc-viewer-card {
+    background: var(--bg-inner);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+}
+
+.sc-viewer-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    flex-shrink: 0;
+}
+
+.sc-player-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.2;
+}
+
+.sc-player-uuid {
+    font-size: 9px;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.sc-canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, rgba(124,92,191,0.09) 0%, transparent 70%);
+    min-height: 280px;
+}
+
+/* skinview3d injecte un canvas WebGL — on le laisse remplir le conteneur */
+#scCanvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.sc-canvas-hint {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0.65;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+
+/* ── Animation buttons ────────────────────────────────────── */
+.sc-anim-btns {
+    display: flex;
+    gap: 6px;
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-card);
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sc-anim-btn {
+    flex: 1;
+    background: var(--bg-inner);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.sc-anim-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-main);
+}
+
+.sc-anim-active {
+    background: rgba(124,92,191,0.2) !important;
+    border-color: rgba(124,92,191,0.5) !important;
+    color: var(--accent) !important;
+}
+
+/* ── Sections droite ──────────────────────────────────────── */
+.sc-section {
+    background: var(--bg-inner);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+}
+
+.sc-section-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+/* ── Bouton appliquer ─────────────────────────────────────── */
+.sc-skin-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 10px;
+    background: var(--bg-body);
+    border-radius: 7px;
+    padding: 3px;
+}
+
+.sc-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.sc-tab:hover { color: var(--text-main); }
+
+.sc-tab-active {
+    background: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* ── Grille de skins ──────────────────────────────────────── */
+.sc-skin-grid-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sc-skin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 6px;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.sc-empty-skins {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 11px;
+    padding: 16px 0;
+    grid-column: 1 / -1;
+}
+
+.sc-skin-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 7px 4px 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    min-width: 0;
+}
+
+.sc-skin-item:hover {
+    border-color: rgba(124,92,191,0.4);
+    background: rgba(124,92,191,0.05);
+}
+
+.sc-skin-selected {
+    border-color: var(--accent) !important;
+    background: rgba(124,92,191,0.15) !important;
+    box-shadow: 0 0 0 1px rgba(124,92,191,0.3);
+}
+
+.sc-skin-item span {
+    font-size: 9px;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    text-align: center;
+}
+
+.sc-skin-delete {
+    position: absolute;
+    top: 2px;
+    right: 3px;
+    background: rgba(248,113,113,0.15);
+    border: none;
+    border-radius: 3px;
+    color: #f87171;
+    font-size: 10px;
+    line-height: 1;
+    width: 14px;
+    height: 14px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    font-family: monospace;
+}
+
+.sc-skin-item:hover .sc-skin-delete {
+    display: flex;
+}
+
+/* ── Zone de drop ─────────────────────────────────────────── */
+.sc-import-drop {
+    border: 2px dashed rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.sc-import-drop:hover,
+.sc-drop-hover {
+    border-color: rgba(124,92,191,0.5) !important;
+    background: rgba(124,92,191,0.05);
+    color: var(--accent) !important;
+}
+
+.sc-import-drop svg {
+    opacity: 0.4;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+}
+
+.sc-import-drop:hover svg { opacity: 0.8; }
+
+/* ── Bouton appliquer ─────────────────────────────────────── */
+.sc-apply-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    width: 100%;
+    padding: 12px;
+    border-radius: 9px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: background 0.15s, transform 0.1s;
+    flex-shrink: 0;
+}
+
+.sc-apply-btn:hover { background: #9B7DD4; }
+.sc-apply-btn:active { transform: scale(0.98); }
+
+/* ── Bouton nav dans le header de comptes ─────────────────── */
+.sc-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(124,92,191,0.12);
+    border: 1px solid rgba(124,92,191,0.28);
+    color: var(--accent);
+    padding: 6px 12px;
+    border-radius: 7px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.sc-nav-btn:hover {
+    background: rgba(124,92,191,0.22);
+    border-color: rgba(124,92,191,0.5);
+}

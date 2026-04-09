@@ -1,0 +1,269 @@
+/* ============================================================
+   servers.js — Gestion des serveurs Minecraft & Stats
+   Mighty Client v2.0.0
+   ============================================================ */
+'use strict';
+
+// ── ÉTAT ─────────────────────────────────────────────────────
+let _servers = [];
+let _serverEditIdx = null;
+let _serverEditColor = '#22c55e';
+
+// ── SERVEUR EN VEDETTE (verrouillé — non modifiable, non supprimable) ──
+const FEATURED_SERVER = {
+    name:     'GladiusMC',
+    ip:       'play.gladiusmc.net',
+    color:    '#e05c5c',
+    featured: true,
+};
+
+// ── PERSISTANCE ───────────────────────────────────────────────
+async function loadServers() {
+    try {
+        if (window.electronAPI?.loadServers) {
+            const data = await window.electronAPI.loadServers();
+            if (data && Array.isArray(data) && data.length > 0) {
+                _servers = data;
+                return;
+            }
+        }
+        const saved = localStorage.getItem('mighty-servers');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) { _servers = parsed; return; }
+        }
+    } catch(e) { console.warn('[Servers] load error:', e); }
+    _servers = []; // les serveurs utilisateur démarrent vides
+}
+
+async function saveServers() {
+    try {
+        if (window.electronAPI?.saveServers) {
+            await window.electronAPI.saveServers(_servers);
+        } else {
+            localStorage.setItem('mighty-servers', JSON.stringify(_servers));
+        }
+    } catch(e) { console.warn('[Servers] save error:', e); }
+}
+
+// ── RENDU DE LA GRILLE DE SERVEURS ───────────────────────────
+async function renderServersGrid() {
+    const grid = document.getElementById('serversGrid');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+
+    // Serveur en vedette GladiusMC — toujours en premier, verrouillé
+    const featuredEl = document.createElement('div');
+    featuredEl.innerHTML = _renderFeaturedCard();
+    grid.appendChild(featuredEl.firstElementChild);
+    _pingAndUpdate(FEATURED_SERVER, 'featured');
+
+    // Serveurs utilisateur
+    _servers.forEach((s, i) => {
+        const el = document.createElement('div');
+        el.innerHTML = _renderServerCard(s, i);
+        grid.appendChild(el.firstElementChild);
+        _pingAndUpdate(s, i);
+    });
+
+    // Bouton Ajouter
+    const addBtn = document.createElement('div');
+    addBtn.className = 'server-card server-add-btn';
+    addBtn.onclick = () => openServerModal();
+    addBtn.innerHTML = `
+        <div style="width:24px;height:24px;border-radius:6px;border:2px dashed rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;color:rgba(255,255,255,0.25);margin-bottom:4px;">+</div>
+        <span style="font-size:9px;color:var(--text-muted);font-weight:600;">Ajouter</span>`;
+    grid.appendChild(addBtn);
+}
+
+// ── CARTE SERVEUR EN VEDETTE (verrouillée) ────────────────────
+function _renderFeaturedCard() {
+    const c = FEATURED_SERVER.color;
+    const letter = FEATURED_SERVER.name.charAt(0).toUpperCase();
+    return `
+        <div class="server-card" id="scard-featured" onclick="connectToServer('featured')" title="${_esc(FEATURED_SERVER.ip)}" style="border-color:${c}55;box-shadow:0 0 0 1px ${c}33,0 0 14px ${c}18;overflow:hidden;justify-content:flex-start;padding:4px 4px 3px;">
+            <div style="width:100%;display:flex;justify-content:center;margin-bottom:2px;">
+                <span style="font-size:6.5px;font-weight:800;letter-spacing:.8px;color:${c};background:${c}1a;border:1px solid ${c}44;border-radius:3px;padding:1px 5px;text-transform:uppercase;">&#9733; Vedette</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;justify-content:center;">
+                <div class="server-logo" style="background:${c}22;border:2px solid ${c}66;width:22px;height:22px;border-radius:5px;">
+                    <span style="font-size:12px;font-weight:800;color:${c};">${letter}</span>
+                </div>
+                <div class="server-name" style="color:${c};font-weight:800;max-width:72px;">${_esc(FEATURED_SERVER.name)}</div>
+                <div id="sstatus-featured" style="display:flex;align-items:center;gap:2px;">
+                    <span class="server-dot offline"></span>
+                    <span class="server-ping-txt" style="font-size:7.5px;color:var(--text-muted);">&#8212;</span>
+                </div>
+            </div>
+        </div>`;
+}
+
+function _renderServerCard(server, idx) {
+    const c = server.color || '#22c55e';
+    const letter = (server.name || '?').charAt(0).toUpperCase();
+    return `
+        <div class="server-card" id="scard-${idx}" onclick="connectToServer(${idx})" title="${_esc(server.ip)}">
+            <div class="server-card-icon" style="background:${c}22;border:1px solid ${c}44;">
+                <span style="font-size:14px;font-weight:800;color:${c};">${letter}</span>
+            </div>
+            <div class="server-card-name">${_esc(server.name)}</div>
+            <div class="server-card-status" id="sstatus-${idx}">
+                <span class="server-dot offline"></span>
+                <span class="server-ping-txt">—</span>
+            </div>
+            <div class="server-card-actions">
+                <button onclick="event.stopPropagation();openServerModal(${idx})" title="Modifier" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-muted);width:18px;height:18px;border-radius:4px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✎</button>
+                <button onclick="event.stopPropagation();deleteServer(${idx})" title="Supprimer" style="background:rgba(240,80,80,0.1);border:1px solid rgba(240,80,80,0.2);color:#f87171;width:18px;height:18px;border-radius:4px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+            </div>
+        </div>`;
+}
+
+async function _pingAndUpdate(server, idx) {
+    const statusEl = document.getElementById('sstatus-' + idx);
+    if (!statusEl) return;
+
+    try {
+        let result = null;
+        if (window.electronAPI?.pingServer) {
+            const parts = (server.ip || '').split(':');
+            result = await window.electronAPI.pingServer({ host: parts[0], port: parseInt(parts[1]) || 25565 });
+        }
+
+        if (result && result.online) {
+            const ms = result.latency ? Math.round(result.latency) : '?';
+            const color = ms < 80 ? '#22c55e' : ms < 200 ? '#f59e0b' : '#f87171';
+            statusEl.innerHTML = `<span class="server-dot" style="background:${color};box-shadow:0 0 6px ${color}88;"></span><span class="server-ping-txt" style="color:${color};">${ms}ms</span>`;
+        } else {
+            statusEl.innerHTML = `<span class="server-dot offline"></span><span class="server-ping-txt">Hors ligne</span>`;
+        }
+    } catch(e) {
+        statusEl.innerHTML = `<span class="server-dot offline"></span><span class="server-ping-txt">Erreur</span>`;
+    }
+}
+
+// ── CONNEXION À UN SERVEUR ────────────────────────────────────
+function connectToServer(idx) {
+    const server = idx === 'featured' ? FEATURED_SERVER : _servers[idx];
+    if (!server) return;
+    const ip = server.ip || '';
+
+    // Discord RPC : afficher le serveur rejoint
+    if (window.electronAPI?.discordUpdate) {
+        window.electronAPI.discordUpdate({ server: server.name });
+    }
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(ip).then(() => {
+            showToast(`IP copiée : ${ip}`, 'success');
+        }).catch(() => showToast(`Serveur : ${ip}`, 'info'));
+    } else {
+        showToast(`Serveur : ${ip}`, 'info');
+    }
+}
+window.connectToServer = connectToServer;
+
+function copyServerIp(idx) {
+    connectToServer(idx);
+}
+window.copyServerIp = copyServerIp;
+
+// ── MODAL SERVEUR ─────────────────────────────────────────────
+function openServerModal(editIdx) {
+    _serverEditIdx = (editIdx !== undefined && editIdx !== null) ? editIdx : null;
+    const modal = document.getElementById('serverModal');
+    const title = document.getElementById('serverModalTitle');
+    const nameInp = document.getElementById('serverNameInput');
+    const ipInp   = document.getElementById('serverIPInput');
+
+    if (editIdx !== undefined && editIdx !== null && _servers[editIdx]) {
+        const s = _servers[editIdx];
+        if (title)   title.textContent  = 'Modifier le serveur';
+        if (nameInp) nameInp.value = s.name || '';
+        if (ipInp)   ipInp.value   = s.ip   || '';
+        _serverEditColor = s.color || '#22c55e';
+    } else {
+        if (title)   title.textContent  = 'Ajouter un serveur';
+        if (nameInp) nameInp.value = '';
+        if (ipInp)   ipInp.value   = '';
+        _serverEditColor = '#22c55e';
+    }
+
+    // Mettre à jour la couleur prévisualisée
+    const preview = document.getElementById('serverColorPreview');
+    const picker  = document.getElementById('serverColorPicker');
+    if (preview) preview.style.background = _serverEditColor;
+    if (picker)  picker.value = _serverEditColor;
+
+    // Mettre à jour le sélecteur de couleurs
+    document.querySelectorAll('#serverColorGrid .color-opt').forEach(el => {
+        el.classList.toggle('selected', el.dataset.color === _serverEditColor);
+    });
+
+    if (modal) modal.classList.add('open');
+}
+window.openServerModal = openServerModal;
+
+function closeServerModal() {
+    const modal = document.getElementById('serverModal');
+    if (modal) modal.classList.remove('open');
+}
+window.closeServerModal = closeServerModal;
+
+async function saveServerModal() {
+    const nameInp = document.getElementById('serverNameInput');
+    const ipInp   = document.getElementById('serverIPInput');
+
+    const name = (nameInp?.value || '').trim();
+    const ip   = (ipInp?.value   || '').trim();
+
+    if (!name) { showToast('Donne un nom au serveur.', 'error'); return; }
+    if (!ip)   { showToast('Saisis une adresse IP.', 'error'); return; }
+
+    const entry = { name, ip, color: _serverEditColor };
+
+    if (_serverEditIdx !== null && _serverEditIdx >= 0) {
+        _servers[_serverEditIdx] = entry;
+    } else {
+        _servers.push(entry);
+    }
+
+    await saveServers();
+    closeServerModal();
+    renderServersGrid();
+    showToast('Serveur sauvegardé !', 'success');
+}
+window.saveServerModal = saveServerModal;
+
+function pickServerColor(el, color) {
+    _serverEditColor = color;
+    document.querySelectorAll('#serverColorGrid .color-opt').forEach(e => e.classList.remove('selected'));
+    if (el) el.classList.add('selected');
+    const preview = document.getElementById('serverColorPreview');
+    const picker  = document.getElementById('serverColorPicker');
+    if (preview) preview.style.background = color;
+    if (picker)  picker.value = color;
+}
+window.pickServerColor = pickServerColor;
+
+async function deleteServer(idx) {
+    _servers.splice(idx, 1);
+    await saveServers();
+    renderServersGrid();
+    showToast('Serveur supprimé.', 'info');
+}
+window.deleteServer = deleteServer;
+
+// ── STATS (temps de jeu & joueurs en ligne) ───────────────────
+// ── HELPER ───────────────────────────────────────────────────
+function _esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+async function initServers() {
+    await loadServers();
+    await renderServersGrid();
+}
+window.initServers = initServers;
+window.renderServersGrid = renderServersGrid;

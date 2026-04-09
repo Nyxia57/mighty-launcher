@@ -1,27 +1,12 @@
-// ═══════════════════════════════════════════════════════
-// OVERLAYS, CONFIRM & INITIALISATION
-// ═══════════════════════════════════════════════════════
+/* ============================================================
+   init.js — Démarrage du launcher
+   Mighty Client v2.0.0
+   ============================================================ */
+'use strict';
 
-// ─── OVERLAYS ────────────────────────────────────────
-function openOv(id)          { document.getElementById(id).classList.add('open'); }
-function closeOv(id)         { document.getElementById(id).classList.remove('open'); }
-function closeOvBg(e, id)    { if (e.target.id === id) closeOv(id); }
-
-// ─── CONFIRM BOX ─────────────────────────────────────
-function showCfm(t, m, cb) {
-  document.getElementById('cfm-title').textContent = t;
-  document.getElementById('cfm-msg').textContent   = m;
-  cfmCb = cb;
-  document.getElementById('cfm-ok').onclick = () => { closeOv('ov-cfm'); if (cfmCb) cfmCb(); };
-  openOv('ov-cfm');
+async function runBootSequence() {
+    // Boot screen supprimé — démarrage immédiat
+    // (aucun jeu à vérifier / installer)
 }
 
-// ─── INITIALISATION ──────────────────────────────────
-(()=>{
-  updateUserChip();
-  renderAccountsDropdown();
-  loadG();
-  renderPlay();
-  const initActive = P.find(p => p.active) || P[0];
-  applyHeroBg(initActive?.version || '1.21');
-})();
+window.runBootSequence = runBootSequence;
