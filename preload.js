@@ -70,4 +70,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
         if (data.type === 'game-close') cb(data);
     }),
 
+    // ── Mise à jour automatique ──────────────────────────────
+    onUpdateAvailable:  (cb) => ipcRenderer.on('update-available',  (_, info) => cb(info)),
+    onUpdateDownloaded: (cb) => ipcRenderer.on('update-downloaded', (_, info) => cb(info)),
+    installUpdate:      ()   => ipcRenderer.send('install-update'),
+
 });

@@ -19,16 +19,20 @@ const { autoUpdater } = require('electron-updater');
 autoUpdater.autoDownload = true;        // télécharge en arrière-plan
 autoUpdater.autoInstallOnAppQuit = true; // installe quand l'app se ferme
 
-autoUpdater.on('update-available', () => {
-    if (mainWindow) mainWindow.webContents.send('update-available');
+autoUpdater.on('update-available', (info) => {
+    if (mainWindow) mainWindow.webContents.send('update-available', info);
 });
 
-autoUpdater.on('update-downloaded', () => {
-    if (mainWindow) mainWindow.webContents.send('update-downloaded');
+autoUpdater.on('update-downloaded', (info) => {
+    if (mainWindow) mainWindow.webContents.send('update-downloaded', info);
 });
 
 autoUpdater.on('error', (err) => {
     console.error('[AutoUpdater] Erreur :', err.message);
+});
+
+ipcMain.on('install-update', () => {
+    autoUpdater.quitAndInstall();
 });
 
 // ── DISCORD RICH PRESENCE ────────────────────────────────────

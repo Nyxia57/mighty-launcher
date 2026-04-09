@@ -212,3 +212,72 @@ async function initNews() {
 window.renderNews    = renderNews;
 window._openNewsLink = _openNewsLink;
 window.initNews = initNews;
+
+// ── Bannière de mise à jour automatique ─────────────────────
+(function initUpdateBanner() {
+    const BANNER_ID = 'mighty-update-banner';
+
+    function getBanner() { return document.getElementById(BANNER_ID); }
+
+    function createBanner(html) {
+        let banner = getBanner();
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = BANNER_ID;
+            banner.style.cssText = [
+                'position:fixed','bottom:0','left:0','right:0',
+                'background:linear-gradient(90deg,#1a73e8,#1557b0)',
+                'color:#fff','padding:10px 20px',
+                'display:flex','align-items:center','justify-content:center','gap:12px',
+                'font-size:13px','font-family:inherit','z-index:99999',
+                'box-shadow:0 -2px 12px rgba(0,0,0,.4)',
+                'animation:slideUpBanner .3s ease',
+            ].join(';');
+            // animation CSS
+            if (!document.getElementById('mighty-update-style')) {
+                const s = document.createElement('style');
+                s.id = 'mighty-update-style';
+                s.textContent = `
+                    @keyframes slideUpBanner {
+                        from { transform: translateY(100%); opacity:0; }
+                        to   { transform: translateY(0);    opacity:1; }
+                    }
+                    #mighty-update-banner button {
+                        padding:5px 14px; border-radius:6px; border:none;
+                        background:#fff; color:#1557b0; font-weight:700;
+                        cursor:pointer; font-size:13px;
+                        transition: transform .1s;
+                    }
+                    #mighty-update-banner button:hover { transform:scale(1.05); }
+                `;
+                document.head.appendChild(s);
+            }
+            document.body.appendChild(banner);
+        }
+        banner.innerHTML = html;
+        return banner;
+    }
+
+    if (window.api?.onUpdateAvailable) {
+        window.api.onUpdateAvailable((info) => {
+            createBanner(`
+                <span>🔄 Mise à jour <strong>v${info.version}</strong> disponible — téléchargement en cours…</span>
+                <div style="width:140px;height:6px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden">
+                    <div id="mighty-update-bar" style="height:100%;width:0%;background:#fff;border-radius:3px;transition:width .4s"></div>
+                </div>
+            `);
+        });
+
+        window.api.onUpdateDownloaded((info) => {
+            const banner = createBanner(`
+                <span>✅ Mise à jour <strong>v${info.version}</strong> téléchargée et prête à installer !</span>
+                <button id="mighty-install-btn">Redémarrer &amp; installer</button>
+                <button id="mighty-later-btn" style="background:transparent!important;color:#cde!important;font-weight:400!important;text-decoration:underline;">Plus tard</button>
+            `);
+            banner.querySelector('#mighty-install-btn')
+                .addEventListener('click', () => window.api.installUpdate());
+            banner.querySelector('#mighty-later-btn')
+                .addEventListener('click', () => banner.remove());
+        });
+    }
+})();
